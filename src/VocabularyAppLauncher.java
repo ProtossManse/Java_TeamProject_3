@@ -5,10 +5,10 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Scanner;
 
-public class VocabularyLauncher {
+public class VocabularyAppLauncher {
     Scanner scanner = new Scanner(System.in);
     HashMap<String, String> userData = new HashMap<>();
-    static final String USERS_DATA_FILE_NAME = "res/usersData.txt";
+    static final String USERS_DATA_FILE_NAME = "res/users.txt";
 
     public void start() {
         int choice = 0;
@@ -72,7 +72,7 @@ public class VocabularyLauncher {
                 continue;
             }
             System.out.println("로그인 성공!");
-            VocabularyMenu app = new VocabularyMenu();
+            VocabularyMenu app = new VocabularyMenu(choice);
             app.menu();
             return;
         }
