@@ -72,7 +72,7 @@ public class VocabularyAppLauncher {
                 continue;
             }
             System.out.println("로그인 성공!");
-            VocabularyMenu app = new VocabularyMenu(choice);
+            VocabularyApp app = new VocabularyApp(choice);
             app.menu();
             return;
         }

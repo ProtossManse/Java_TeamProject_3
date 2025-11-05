@@ -6,13 +6,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
-import java.util.Vector;
 
-public class VocabularyMenu {
+public class VocabularyApp {
     Scanner scanner = new Scanner(System.in);
     final String username;
 
-    VocabularyMenu(String username) {
+    VocabularyApp(String username) {
         this.username = username;
     }
 
