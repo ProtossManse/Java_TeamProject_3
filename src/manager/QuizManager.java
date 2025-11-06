@@ -32,7 +32,7 @@ public class QuizManager {
     private void shortAnswerQuestion() {
         // TODO: 주관식 각 문제 구현
     }
-    
+
     private void multipleChoiceQuestion() {
         // TODO: 객관식 각 문제 구현
     }

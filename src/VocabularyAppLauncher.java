@@ -90,8 +90,7 @@ public class VocabularyAppLauncher {
                         int streak = countStreak(foundUser);
                         userDataFile.printf("%s\t%s\t%d\t%s\r\n", foundUser.getName(), foundUser.getPassword(), streak, LocalDate.now());
                         foundUser.setStreak(streak);
-                    }
-                    else
+                    } else
                         userDataFile.printf("%s\t%s\t%d\t%s\r\n", user.getName(), user.getPassword(), user.getStreak(), user.getLastDate());
                 }
 

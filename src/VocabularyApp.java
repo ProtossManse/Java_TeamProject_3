@@ -5,7 +5,6 @@ import manager.VocaFileManager;
 import util.Path;
 
 import java.io.File;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
@@ -60,7 +59,6 @@ public class VocabularyApp {
             }
         }
     }
-
 
 
     // =========== 개인 단어 관리 ===========

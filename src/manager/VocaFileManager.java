@@ -17,12 +17,15 @@ public abstract class VocaFileManager {
         // TODO: 단어 추가 로직 구현
 
     }
+
     void removeVoca() {
         // TODO: 단어 삭제 로직 구현
     }
+
     void editVoca() {
         // TODO: 단어 수정 로직 구현
     }
+
     void searchVoca() {
         // TODO: 단어 검색 로직 구현
     }

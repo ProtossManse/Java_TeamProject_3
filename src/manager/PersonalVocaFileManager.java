@@ -1,6 +1,6 @@
 package manager;
 
-public class PersonalVocaFileManager extends VocaFileManager{
+public class PersonalVocaFileManager extends VocaFileManager {
     public PersonalVocaFileManager(String fileName) {
         super(fileName);
     }
