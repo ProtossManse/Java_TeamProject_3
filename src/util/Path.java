@@ -5,6 +5,10 @@ public class Path {
         return "res/users.txt";
     }
 
+    public static String getUserDirPath(String username) {
+        return "res/" + username + "/";
+    }
+
     public static String getVocaDirPath(String username) {
         return "res/" + username + "/vocas/";
     }

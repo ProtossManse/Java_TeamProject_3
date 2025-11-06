@@ -104,14 +104,11 @@ public class VocabularyAppLauncher {
         System.out.print("비밀번호 입력: ");
         String password = scanner.next();
         scanner.nextLine();
-        File usersDataFile = new File(Path.getUsersFilePath());
-        try {
-            usersDataFile.createNewFile();
-            try (PrintWriter usersDataPrintWriter = new PrintWriter(Path.getUsersFilePath())) {
-                usersDataPrintWriter.println(name + '\t' + password);
-            }
-
-        } catch (IOException e) {
+        File userDir = new File(Path.getUserDirPath(name));
+        try (PrintWriter usersDataPrintWriter = new PrintWriter(Path.getUsersFilePath())) {
+            userDir.mkdir();
+            usersDataPrintWriter.println(name + '\t' + password);
+        } catch (FileNotFoundException e) {
             System.out.println("알 수 없는 에러 발생");
         }
 
