@@ -1,3 +1,5 @@
+import util.Path;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -8,7 +10,6 @@ import java.util.Scanner;
 public class VocabularyAppLauncher {
     Scanner scanner = new Scanner(System.in);
     HashMap<String, String> userData = new HashMap<>();
-    static final String USERS_DATA_FILE_NAME = "res/users.txt";
 
     public void start() {
         int choice = 0;
@@ -80,7 +81,7 @@ public class VocabularyAppLauncher {
     }
 
     private void readUsers() {
-        try (Scanner file = new Scanner(new File(USERS_DATA_FILE_NAME))) {
+        try (Scanner file = new Scanner(new File(Path.getUsersFilePath()))) {
             while (file.hasNextLine()) {
                 String[] data = file.nextLine().split("\t");
                 userData.put(data[0].trim(), data[1].trim());
@@ -103,10 +104,10 @@ public class VocabularyAppLauncher {
         System.out.print("비밀번호 입력: ");
         String password = scanner.next();
         scanner.nextLine();
-        File usersDataFile = new File(USERS_DATA_FILE_NAME);
+        File usersDataFile = new File(Path.getUsersFilePath());
         try {
             usersDataFile.createNewFile();
-            try (PrintWriter usersDataPrintWriter = new PrintWriter(USERS_DATA_FILE_NAME)) {
+            try (PrintWriter usersDataPrintWriter = new PrintWriter(Path.getUsersFilePath())) {
                 usersDataPrintWriter.println(name + '\t' + password);
             }
 

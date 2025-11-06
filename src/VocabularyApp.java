@@ -1,6 +1,7 @@
 import manager.PersonalVocaFileManager;
 import manager.QuizManager;
 import manager.VocaFileManager;
+import util.Path;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ public class VocabularyApp {
     }
 
     public ArrayList<String> getPersonalVocaFilesList() {
-        File dir = new File("res/" + username + "/vocas");
+        File dir = new File(Path.getVocaDirPath(username));
 
         String[] list = dir.list();
         if (list != null) {
@@ -26,7 +27,7 @@ public class VocabularyApp {
     }
 
     public ArrayList<String> getPersonalNotes() {
-        File dir = new File("res/" + username + "/notes");
+        File dir = new File(Path.getNoteDirPath(username));
 
         String[] list = dir.list();
         if (list != null) {
@@ -97,7 +98,7 @@ public class VocabularyApp {
                 continue;
             }
 
-            VocaFileManager vocaFileManager = new PersonalVocaFileManager("res/" + username + "/" + selectedFile);
+            VocaFileManager vocaFileManager = new PersonalVocaFileManager(Path.getVocaFilePath(username, selectedFile));
             vocaFileManager.menu();
             return;
 
@@ -143,7 +144,7 @@ public class VocabularyApp {
             switch (choice) {
                 case 1 -> quizManager.personalWordQuiz(getPersonalVocaFilesList());
                 case 2 -> quizManager.personalNoteQuiz(getPersonalNotes());
-                case 3 -> quizManager.personalFavoriteQuiz("res/"+ username +"/vocas/_favorite.txt");
+                case 3 -> quizManager.personalFavoriteQuiz(Path.getFavoriteFilePath(username));
                 case 4 -> quizManager.publicWordQuiz();
                 case 5 -> quizManager.publicFrequentlyMissedQuiz();
                 case 6 -> System.out.println("메인메뉴로 돌아갑니다.");
