@@ -31,7 +31,6 @@ public class PersonalVocaFileManager extends VocaFileManager{
 
     private void favoriteVoca() {
         // TODO: 즐겨찾기 기능 구현
-        // 즐겨찾기는 res/{username}/vocas/favorite.txt로 만드는 게 좋을 것 같습니다.
     }
 
 }
