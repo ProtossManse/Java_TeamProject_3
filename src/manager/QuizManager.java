@@ -25,6 +25,10 @@ public class QuizManager {
         // TODO: 추후 구현
     }
 
+    private void createNote() {
+        // TODO: 오답노트 생성 구현
+    }
+
     private void shortAnswerQuestion() {
         // TODO: 주관식 각 문제 구현
     }
