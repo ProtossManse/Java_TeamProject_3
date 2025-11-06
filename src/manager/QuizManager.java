@@ -36,7 +36,7 @@ public class QuizManager {
         // TODO: 주관식 각 문제 구현
     }
 
-    private void multipleChoiceQuestion(ArrayList<String> list, String username, String vocabName) {
+    private void multipleChoiceQuestion(ArrayList<String> list) {
         // TODO: 객관식 각 문제 구현
         if (list == null){
             System.out.println("단어가 등록되어 있지 않습니다.");
