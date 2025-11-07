@@ -1,23 +1,25 @@
+import data.User;
 import manager.PersonalVocaFileManager;
 import manager.QuizManager;
 import manager.VocaFileManager;
 import util.Path;
 
 import java.io.File;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
 
 public class VocabularyApp {
     Scanner scanner = new Scanner(System.in);
-    final String username;
+    final User currentUser;
 
-    VocabularyApp(String username) {
-        this.username = username;
+    VocabularyApp(User user) {
+        this.currentUser = user;
     }
 
     public ArrayList<String> getPersonalVocaFilesList() {
-        File dir = new File(Path.getVocaDirPath(username));
+        File dir = new File(Path.getVocaDirPath(currentUser.getName()));
 
         String[] list = dir.list();
         if (list != null) {
@@ -27,7 +29,7 @@ public class VocabularyApp {
     }
 
     public ArrayList<String> getPersonalNotes() {
-        File dir = new File(Path.getNoteDirPath(username));
+        File dir = new File(Path.getNoteDirPath(currentUser.getName()));
 
         String[] list = dir.list();
         if (list != null) {
@@ -40,7 +42,8 @@ public class VocabularyApp {
         int choice = 0;
         while (choice != 4) {
             System.out.println("\n\n\n==== 단어장 메뉴 화면 ====");
-            System.out.println("이름: " + this.username);
+            System.out.println("이름: " + currentUser.getName());
+            System.out.println(currentUser.getStreak() + "일 연속 공부 중!");
             System.out.println("1. 개인 단어장 관리");
             System.out.println("2. 공용 단어장 관리");
             System.out.println("3. 퀴즈 풀기");
@@ -59,10 +62,11 @@ public class VocabularyApp {
     }
 
 
+
     // =========== 개인 단어 관리 ===========
 
     private void managePersonalVocas() {
-        String choice = "";
+        String choice;
         ArrayList<String> wordBooksFileArray = getPersonalVocaFilesList();
         if (wordBooksFileArray == null) {
             createVocaFile();
@@ -98,7 +102,7 @@ public class VocabularyApp {
                 continue;
             }
 
-            VocaFileManager vocaFileManager = new PersonalVocaFileManager(Path.getVocaFilePath(username, selectedFile));
+            VocaFileManager vocaFileManager = new PersonalVocaFileManager(Path.getVocaFilePath(currentUser.getName(), selectedFile));
             vocaFileManager.menu();
             return;
 
@@ -144,7 +148,7 @@ public class VocabularyApp {
             switch (choice) {
                 case 1 -> quizManager.personalWordQuiz(getPersonalVocaFilesList());
                 case 2 -> quizManager.personalNoteQuiz(getPersonalNotes());
-                case 3 -> quizManager.personalFavoriteQuiz(Path.getFavoriteFilePath(username));
+                case 3 -> quizManager.personalFavoriteQuiz(Path.getFavoriteFilePath(currentUser.getName()));
                 case 4 -> quizManager.publicWordQuiz();
                 case 5 -> quizManager.publicFrequentlyMissedQuiz();
                 case 6 -> System.out.println("메인메뉴로 돌아갑니다.");
