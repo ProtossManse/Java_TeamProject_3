@@ -1,5 +1,6 @@
 package manager;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
@@ -37,7 +38,7 @@ public class QuizManager {
             System.out.println("단어가 등록되어 있지 않습니다.");
             return;
         }
-        Scanner sc = new Scanner(System.in);
+        Scanner sc = new Scanner(System.in, StandardCharsets.UTF_8);
         Random ran = new Random();
 
         System.out.print("문제 수를 입력해주세요 : ");
@@ -127,7 +128,7 @@ public class QuizManager {
             System.out.println("객관식 보기를 만들 단어(4개)가 부족합니다.");
             return;
         }
-        Scanner sc = new Scanner(System.in);
+        Scanner sc= new Scanner(System.in, StandardCharsets.UTF_8);
         Random ran = new Random();
 
         System.out.print("문제 수를 입력해주세요 : ");

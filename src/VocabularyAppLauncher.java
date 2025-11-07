@@ -13,7 +13,7 @@ import java.util.Scanner;
 import java.nio.charset.StandardCharsets;
 
 public class VocabularyAppLauncher {
-    Scanner scanner = new Scanner(System.in);
+    Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8);
     ArrayList<User> users = new ArrayList<>();
 
     

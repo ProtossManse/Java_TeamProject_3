@@ -12,7 +12,7 @@ import java.util.Scanner;
 
 public abstract class VocaFileManager {
     File vocaFile;
-    Scanner scanner = new Scanner(System.in);
+    Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8);
 
     VocaFileManager(String fileName) {
         vocaFile = new File(fileName);
