@@ -3,15 +3,21 @@ import util.Path;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.nio.charset.StandardCharsets;
 
 public class VocabularyAppLauncher {
     Scanner scanner = new Scanner(System.in);
     ArrayList<User> users = new ArrayList<>();
 
+    
     public void start() {
         int choice = 0;
         while (choice != 2) {
@@ -82,9 +88,9 @@ public class VocabularyAppLauncher {
                 continue;
             }
             System.out.println("로그인 성공!");
-            try (
-                    PrintWriter userDataFile = new PrintWriter(Path.getUsersFilePath())
-            ) {
+            try (PrintWriter userDataFile = new PrintWriter(
+                    new OutputStreamWriter(new FileOutputStream(Path.getUsersFilePath(), false), StandardCharsets.UTF_8)
+            )) {
                 for (User user : users) {
                     if (user.equals(foundUser)) {
                         int streak = countStreak(foundUser);
@@ -95,7 +101,7 @@ public class VocabularyAppLauncher {
                 }
 
             } catch (FileNotFoundException ignored) {
-
+                System.out.println("users 파일을 찾을 수 없습니다.");
             }
 
             VocabularyApp app = new VocabularyApp(foundUser);
@@ -106,14 +112,19 @@ public class VocabularyAppLauncher {
     }
 
     private void readUsers() {
-        try (Scanner file = new Scanner(new File(Path.getUsersFilePath()))) {
+        users.clear();
+        File usersFile = new File(Path.getUsersFilePath());
+        if (!usersFile.exists()) {
+            return;
+        }
+        try (Scanner file = new Scanner(usersFile, StandardCharsets.UTF_8.name())) {
             while (file.hasNextLine()) {
                 String[] data = file.nextLine().split("\t");
+                if (data.length < 4) continue;
                 users.add(new User(data[0].trim(), data[1].trim(), Integer.parseInt(data[2].trim()), LocalDate.parse(data[3].trim())));
             }
 
         } catch (FileNotFoundException ignored) {
-
         }
     }
 
@@ -133,16 +144,18 @@ public class VocabularyAppLauncher {
         scanner.nextLine();
         File userDir = new File(Path.getUserDirPath(name));
         LocalDate date = LocalDate.now();
-        try (PrintWriter usersDataPrintWriter = new PrintWriter(Path.getUsersFilePath())) {
+        try {
             userDir.mkdir();
-            usersDataPrintWriter.println(name + '\t' + password + '\t' + "1" + '\t' + date);
-        } catch (FileNotFoundException e) {
-            System.out.println("알 수 없는 에러 발생");
+            try (PrintWriter usersDataPrintWriter = new PrintWriter(
+                    new OutputStreamWriter(new FileOutputStream(Path.getUsersFilePath(), false), StandardCharsets.UTF_8)
+            )) {
+                usersDataPrintWriter.println(name + '\t' + password + '\t' + "1" + '\t' + date);
+            }
+        } catch (IOException e) {
+            System.out.println("알 수 없는 에러 발생: " + e.getMessage());
         }
 
         users.add(new User(name, password, 1, date));
-
-
     }
 
     private int countStreak(User user) {

@@ -5,6 +5,7 @@ import manager.VocaFileManager;
 import util.Path;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
@@ -110,8 +111,39 @@ public class VocabularyApp {
 
 
     private void createVocaFile() {
-        // TODO: 단어장 생성 로직 구현
-        // 단어장 이름 정하는 기능
+        System.out.println("==== 새 단어장 만들기 ====");
+        System.out.print("만들 단어장 이름을 입력하세요 (확장자 포함 가능, 예: myvoca.txt): ");
+        String filename = scanner.next().trim();
+        scanner.nextLine();
+        if (filename.isEmpty()) {
+            System.out.println("파일 이름을 입력해야 합니다.");
+            return;
+        }
+
+        File vocaDir = new File(Path.getVocaDirPath(currentUser.getName()));
+        if (!vocaDir.exists()) {
+            if (!vocaDir.mkdirs()) {
+                System.out.println("단어장 디렉토리를 생성할 수 없습니다.");
+                return;
+            }
+        }
+
+        File newFile = new File(Path.getVocaFilePath(currentUser.getName(), filename));
+        if (newFile.exists()) {
+            System.out.println("이미 같은 이름의 단어장이 존재합니다.");
+            return;
+        }
+
+        try {
+            boolean created = newFile.createNewFile();
+            if (!created) {
+                System.out.println("단어장 생성에 실패했습니다.");
+                return;
+            }
+            System.out.println("단어장 '" + filename + "'이 생성되었습니다.");
+        } catch (IOException e) {
+            System.out.println("단어장 생성 중 오류: " + e.getMessage());
+        }
     }
 
     // =========== 공용 단어 관리 ===========
