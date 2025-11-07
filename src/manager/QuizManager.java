@@ -33,7 +33,89 @@ public class QuizManager {
     }
 
     private void shortAnswerQuestion() {
-        // TODO: 주관식 각 문제 구현
+        if (list == null) {
+            System.out.println("단어가 등록되어 있지 않습니다.");
+            return;
+        }
+        Scanner sc = new Scanner(System.in);
+        Random ran = new Random();
+
+        System.out.print("문제 수를 입력해주세요 : ");
+        int quizNum = sc.nextInt();
+        sc.nextLine();
+
+        if(quizNum < 1) {
+            System.out.println("1문제 이상 출제되어야 합니다.");
+            return;
+        } else if (quizNum > list.size()) {
+            quizNum = list.size();
+        }
+
+        boolean[] usedIndex = new boolean[list.size()];
+        int score = 0;
+        for(int i = 0; i < quizNum; i++){
+            int answerIndex;
+            do {
+                answerIndex = ran.nextInt(list.size());
+            } while (usedIndex[answerIndex]);
+            usedIndex[answerIndex] = true;
+
+            String[] a = list.get(answerIndex).split("\t", 2);
+            String aEng = a[0].trim();
+            String aKor = a[1].trim();
+
+            ArrayList<String> aKorList = new ArrayList<>();
+
+            if (aKor.contains("/")) {
+                String[] aKorArr = aKor.split("/");
+                for (String kor : aKorArr) {
+                    aKorList.add(kor.trim());
+                }
+            } else {
+                aKorList.add(aKor);
+            }
+
+            int randquiz = ran.nextInt(2) + 1;
+            if(randquiz==1){
+                System.out.println("\n[" + (i + 1) + "/" + quizNum + "] " + aEng + "의 뜻은?");
+                String answer = sc.nextLine().trim();
+
+                if (aKorList.contains(answer) || aKor.equals(answer)) {
+                    System.out.println("정답!");
+                    score++;
+                } else {
+                    System.out.println("오답!");
+
+                    String answerStr = "";
+                    for (String kor : aKorList) {
+                        answerStr += kor + "/ ";
+                    }
+                    answerStr = answerStr.substring(0,answerStr.length()-2);
+                    System.out.println("정답은 " + aEng + " = " + answerStr);
+                }
+
+            } else{
+
+                String questionStr = "";
+                for (String kor : aKorList) {
+                    questionStr += kor + "/ ";
+                }
+                questionStr = questionStr.substring(0,questionStr.length()-2);
+
+                System.out.println("\n[" + (i + 1) + "/" + quizNum + "] " + questionStr + "의 뜻은?");
+                String answer = sc.nextLine().trim();
+
+                if (answer.equals(aEng)) {
+                    System.out.println("정답!");
+                    score++;
+                } else {
+                    System.out.println("오답!");
+                    System.out.println("정답은 " + aEng + " = " + questionStr);
+                }
+            }
+
+        }
+        System.out.printf("\n총 %d문제 중 %d개 정답 (정답률 %.1f%%)\n", quizNum, score, 100.0 * score / quizNum);
     }
 
     private void multipleChoiceQuestion(ArrayList<String> list) {
