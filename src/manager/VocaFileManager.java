@@ -8,6 +8,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public abstract class VocaFileManager {
@@ -24,14 +25,16 @@ public abstract class VocaFileManager {
         System.out.println("==== 단어 추가 ====");
         System.out.print("영단어: ");
         String eng = scanner.nextLine().trim();
+
         if (!eng.matches("^[a-zA-Z][a-zA-Z -]*$")) {
-        System.out.println("영단어에는 영어/띄어쓰기/하이픈만 사용할 수 있습니다.");
+            System.out.println("영단어에는 영어/띄어쓰기/하이픈만 사용할 수 있습니다.");
             return;
         }
         if (eng.isEmpty()) {
             System.out.println("영단어는 비어있을 수 없습니다.");
             return;
         }
+
         System.out.print("뜻(여러 뜻은 '/'로 구분): ");
         String kor = scanner.nextLine().trim();
         if (kor.isEmpty()) {
@@ -40,16 +43,51 @@ public abstract class VocaFileManager {
         }
 
         File parent = vocaFile.getParentFile();
-        if (parent != null && !parent.exists()) {
+        if (parent != null && !parent.exists())
             parent.mkdirs();
+
+        ArrayList<String> lines = new ArrayList<>();
+
+        try (Scanner fileScanner = new Scanner(vocaFile, StandardCharsets.UTF_8)) {
+            while (fileScanner.hasNextLine()) {
+                lines.add(fileScanner.nextLine());
+            }
+        } catch (Exception ignored) {
+        }
+
+        boolean updated = false;
+
+        for (int i = 0; i < lines.size(); i++) {
+            String[] parts = lines.get(i).split("\t", 2);
+            if (parts[0].trim().equalsIgnoreCase(eng)) {
+                ArrayList<String> meanings = new ArrayList<>(Arrays.asList(parts[1].trim().split("/")));
+                if (meanings.contains(kor)) {
+                    System.out.println("이미 존재하는 단어입니다! 다시 확인해 주세요.");
+                    return;
+                }
+                meanings.add(kor);
+                lines.set(i, eng + "\t" + String.join("/", meanings));
+                updated = true;
+                break;
+            }
         }
 
         try (PrintWriter pw = new PrintWriter(
-                new OutputStreamWriter(new FileOutputStream(vocaFile, true), StandardCharsets.UTF_8))) {
-            pw.printf("%s\t%s\r\n", eng, kor);
-            System.out.println("단어가 추가되었습니다.");
+                new OutputStreamWriter(new FileOutputStream(vocaFile, false), StandardCharsets.UTF_8))) {
+
+            if (updated) {
+                System.out.println("이미 존재하는 영단어입니다. 뜻을 추가합니다.");
+                for (String line : lines)
+                    pw.println(line);
+            } else {
+                for (String line : lines)
+                    pw.println(line);
+                pw.printf("%s\t%s%n", eng, kor);
+                System.out.println("단어가 추가되었습니다.");
+            }
+
         } catch (IOException e) {
-            System.out.println("단어 추가 중 오류가 발생했습니다: " + e.getMessage());
+            System.out.println("단어 추가 중 오류: " + e.getMessage());
         }
     }
 
@@ -170,20 +208,45 @@ public abstract class VocaFileManager {
 
         System.out.println("현재: " + curEng + " = " + curKor);
         System.out.print("새 영단어 (엔터 입력 시 유지): ");
-        String newEng = scanner.nextLine();
+        String newEng = scanner.nextLine().trim();
         System.out.print("새 뜻 (엔터 입력 시 유지, 여러 뜻은 '/'로 구분): ");
-        String newKor = scanner.nextLine();
+        String newKor = scanner.nextLine().trim();
 
-        if (newEng == null || newEng.trim().isEmpty()) newEng = curEng;
-        if (newKor == null || newKor.trim().isEmpty()) newKor = curKor;
+        if (newEng.isEmpty())
+            newEng = curEng;
+        if (newKor.isEmpty())
+            newKor = curKor;
 
-        lines.set(idx, newEng.trim() + "\t" + newKor.trim());
+        for (int i = 0; i < lines.size(); i++) {
+            if (i == idx)
+                continue;
+            String[] p = lines.get(i).split("\t", 2);
+            if (p[0].trim().equalsIgnoreCase(newEng)) {
+
+                if (p[1].trim().equals(newKor)) {
+                    System.out.println("이미 존재하는 단어입니다! 다시 확인해 주세요.");
+                    return;
+                }
+
+                ArrayList<String> list = new ArrayList<>(Arrays.asList(p[1].trim().split("/")));
+                if (list.contains(newKor)) {
+                    System.out.println("이미 해당 뜻이 존재합니다! 다시 확인해 주세요.");
+                    return;
+                }
+
+                list.add(newKor);
+                lines.set(i, newEng + "\t" + String.join("/", list));
+                System.out.println("이미 존재하는 영단어입니다. 뜻을 추가합니다.");
+                return;
+            }
+        }
+
+        lines.set(idx, newEng + "\t" + newKor);
 
         try (PrintWriter pw = new PrintWriter(
                 new OutputStreamWriter(new FileOutputStream(vocaFile, false), StandardCharsets.UTF_8))) {
-            for (String line : lines) {
+            for (String line : lines)
                 pw.println(line);
-            }
             System.out.println("수정이 완료되었습니다.");
         } catch (IOException e) {
             System.out.println("파일을 쓸 수 없습니다: " + e.getMessage());
