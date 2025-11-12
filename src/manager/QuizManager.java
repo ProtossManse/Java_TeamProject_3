@@ -23,16 +23,43 @@ public class QuizManager {
     public void personalWordQuiz(ArrayList<String> list) {
         // TODO: 개인 단어장 퀴즈 구현
         // 단어장 목록 출력 및 선택, 문제풀기
+        String chosen = pickFileFromList("개인 단어장 선택", fileList);
+        if (chosen == null) return;
+        ArrayList<String> words = loadWordsFromFile(chosen);
 
+        if (words == null || words.isEmpty()) {
+            System.out.println("단어가 등록되어 있지 않습니다.");
+            return;
+        }
+        currentSourceFile = chosen;
+        QuizMenu("개인 단어장 -" + fileNameOnly(chosen) + "-", words);
     }
 
     public void personalNoteQuiz(ArrayList<String> list) {
         // TODO: 개인 오답노트 퀴즈 구현
         // 오답노트 목록 출력 및 선택, 문제풀기
+        String chosen = pickFileFromList("오답노트 선택", noteFileList);
+        if (chosen == null) return;
+        ArrayList<String> words = loadWordsFromFile(chosen);
+
+        if (words == null || words.isEmpty()) {
+            System.out.println("오답노트가 비어 있습니다.");
+            return;
+        }
+        currentSourceFile = chosen;
+        QuizMenu("오답노트 -" + fileNameOnly(chosen) + "-", words);
     }
 
     public void personalFavoriteQuiz(String favoriteWordsFilename) {
         // TODO: 즐겨찾기 퀴즈 구현
+        ArrayList<String> words = loadWordsFromFile(favoriteFile);
+
+        if (words == null || words.isEmpty()) {
+            System.out.println("즐겨찾기 단어가 없습니다.");
+            return;
+        }
+        QuizMenu("즐겨찾기 (" + fileNameOnly(favoriteFile) + ")", words);
+
     }
 
     public void publicWordQuiz() {
@@ -74,6 +101,80 @@ public class QuizManager {
         String entry = aEng + "\t" + aKor;
         if (!noteWords.contains(entry)) {
             noteWords.add(entry);
+        }
+    }
+
+    private void QuizMenu(String title, ArrayList<String> list) {
+        if (list == null || list.isEmpty()) {
+            System.out.println("단어가 등록되어 있지 않습니다.");
+            return;
+        }
+
+        while (true) {
+            System.out.println("\n===== [" + title + " 퀴즈 유형 선택] =====");
+            System.out.println("1) 주관식 퀴즈");
+            System.out.println("2) 객관식 퀴즈");
+            System.out.println("0) 뒤로가기");
+            System.out.print("번호 선택: ");
+
+            int mode = readInt();
+            if (mode == 0) break;
+
+            switch (mode) {
+                case 1 -> shortAnswerQuestion(list);
+                case 2 -> multipleChoiceQuestion(list);
+                default -> System.out.println("잘못된 선택입니다.");
+            }
+        }
+    }
+
+    private ArrayList<String> loadWordsFromFile(String pathStr) {
+        try {
+            Path p = Paths.get(pathStr);
+            ArrayList<String> out = new ArrayList<>();
+            for (String line : Files.readAllLines(p, StandardCharsets.UTF_8)) {
+                String t = line.trim();
+                if (t.isEmpty() || t.startsWith("#")) continue;
+                // "영단어\t뜻" 형식만 수용
+                int tab = t.indexOf('\t');
+                if (tab <= 0 || tab == t.length() - 1) continue;
+                out.add(t);
+            }
+            return out;
+        } catch (IOException e) {
+            System.out.println("파일을 읽는 중 오류가 발생했습니다: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private String pickFileFromList(String title, ArrayList<String> files) {
+        if (files == null || files.isEmpty()) {
+            System.out.println("선택할 파일이 없습니다.");
+            return null;
+        }
+        System.out.println("\n===== [" + title + "] =====");
+        for (int i = 0; i < files.size(); i++) {
+            System.out.println((i + 1) + ") " + files.get(i));
+        }
+        System.out.println("0) 뒤로가기");
+        System.out.print("번호 선택: ");
+        int sel = readInt();
+        if (sel == 0) return null;
+        if (sel < 1 || sel > files.size()) {
+            System.out.println("잘못된 선택입니다.");
+            return null;
+        }
+        return files.get(sel - 1);
+    }
+
+    private int readInt() {
+        while (true) {
+            String s = readLine().trim();
+            try {
+                return Integer.parseInt(s);
+            } catch (NumberFormatException e) {
+                System.out.print("숫자를 입력하세요: ");
+            }
         }
     }
 
