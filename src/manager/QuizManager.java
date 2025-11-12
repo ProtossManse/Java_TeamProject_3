@@ -1,12 +1,11 @@
 package manager;
 
-
+import data.User;
+import util.Path;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -136,17 +135,18 @@ public class QuizManager {
 
     private ArrayList<String> loadWordsFromFile(String pathStr) {
         try {
-            Path p = Paths.get(pathStr);
+            java.nio.file.Path p = java.nio.file.Paths.get(pathStr);
             ArrayList<String> out = new ArrayList<>();
-            for (String line : Files.readAllLines(p, StandardCharsets.UTF_8)) {
+
+            for (String line : java.nio.file.Files.readAllLines(p, StandardCharsets.UTF_8)) {
                 String t = line.trim();
                 if (t.isEmpty() || t.startsWith("#")) continue;
-                // "영단어\t뜻" 형식만 수용
                 int tab = t.indexOf('\t');
                 if (tab <= 0 || tab == t.length() - 1) continue;
                 out.add(t);
             }
             return out;
+
         } catch (IOException e) {
             System.out.println("파일을 읽는 중 오류가 발생했습니다: " + e.getMessage());
             return null;
