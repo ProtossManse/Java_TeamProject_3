@@ -1,10 +1,11 @@
 package manager;
 
 import data.User;
-import util.Path;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ public class QuizManager {
 
     ArrayList<String> noteWords = new ArrayList<>(); // 오답노트에 추가될 단어들
     final User username;
+    private String currentSourceFile = null;
 
     public QuizManager(User username) {
         this.username = username;
@@ -23,7 +25,7 @@ public class QuizManager {
     public void personalWordQuiz(ArrayList<String> list) {
         // TODO: 개인 단어장 퀴즈 구현
         // 단어장 목록 출력 및 선택, 문제풀기
-        String chosen = pickFileFromList("개인 단어장 선택", fileList);
+        String chosen = pickFileFromList("개인 단어장 선택", list);
         if (chosen == null) return;
         ArrayList<String> words = loadWordsFromFile(chosen);
 
@@ -38,7 +40,7 @@ public class QuizManager {
     public void personalNoteQuiz(ArrayList<String> list) {
         // TODO: 개인 오답노트 퀴즈 구현
         // 오답노트 목록 출력 및 선택, 문제풀기
-        String chosen = pickFileFromList("오답노트 선택", noteFileList);
+        String chosen = pickFileFromList("오답노트 선택", list);
         if (chosen == null) return;
         ArrayList<String> words = loadWordsFromFile(chosen);
 
@@ -52,13 +54,13 @@ public class QuizManager {
 
     public void personalFavoriteQuiz(String favoriteWordsFilename) {
         // TODO: 즐겨찾기 퀴즈 구현
-        ArrayList<String> words = loadWordsFromFile(favoriteFile);
+        ArrayList<String> words = loadWordsFromFile(favoriteWordsFilename);
 
         if (words == null || words.isEmpty()) {
             System.out.println("즐겨찾기 단어가 없습니다.");
             return;
         }
-        QuizMenu("즐겨찾기 (" + fileNameOnly(favoriteFile) + ")", words);
+        QuizMenu("즐겨찾기 (" + fileNameOnly(favoriteWordsFilename) + ")", words);
 
     }
 
@@ -144,6 +146,16 @@ public class QuizManager {
         } catch (IOException e) {
             System.out.println("파일을 읽는 중 오류가 발생했습니다: " + e.getMessage());
             return null;
+        }
+    }
+
+    private String fileNameOnly(String path) {
+        try {
+            java.nio.file.Path p = java.nio.file.Paths.get(path);
+            java.nio.file.Path fn = p.getFileName();
+            return (fn == null) ? path : fn.toString();
+        } catch (Exception e) {
+            return path;
         }
     }
 
