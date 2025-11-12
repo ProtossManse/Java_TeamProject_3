@@ -173,7 +173,7 @@ public class VocabularyApp {
             choice = scanner.nextInt();
             scanner.nextLine();
 
-            QuizManager quizManager = new QuizManager();
+            QuizManager quizManager = new QuizManager(currentUser);
 
 
             switch (choice) {

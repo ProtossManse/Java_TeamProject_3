@@ -17,11 +17,11 @@ public class QuizManager {
     static Random ran = new Random();
 
     ArrayList<String> noteWords = new ArrayList<>(); // 오답노트에 추가될 단어들
-    final User username;
+    final User user;
     private String currentSourceFile = null;
 
-    public QuizManager(User username) {
-        this.username = username;
+    public QuizManager(User user) {
+        this.user = user;
     }
 
     public void personalWordQuiz(ArrayList<String> list) {
@@ -80,7 +80,7 @@ public class QuizManager {
             return;
         }
 
-        File notes = new File(Path.getNoteDirPath(username.getName()));
+        File notes = new File(Path.getNoteDirPath(user.getName()));
 
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HH_mm_ss");
