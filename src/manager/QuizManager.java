@@ -1,10 +1,11 @@
 package manager;
 
-import data.User;
+
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -13,6 +14,9 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class QuizManager {
+
+    static Scanner sc= new Scanner(System.in, StandardCharsets.UTF_8);
+    static Random ran = new Random();
 
     ArrayList<String> noteWords = new ArrayList<>(); // 오답노트에 추가될 단어들
     final User username;
@@ -170,7 +174,9 @@ public class QuizManager {
         }
         System.out.println("0) 뒤로가기");
         System.out.print("번호 선택: ");
+
         int sel = readInt();
+
         if (sel == 0) return null;
         if (sel < 1 || sel > files.size()) {
             System.out.println("잘못된 선택입니다.");
@@ -181,7 +187,7 @@ public class QuizManager {
 
     private int readInt() {
         while (true) {
-            String s = readLine().trim();
+            String s = sc.nextLine().trim();
             try {
                 return Integer.parseInt(s);
             } catch (NumberFormatException e) {
@@ -195,8 +201,6 @@ public class QuizManager {
             System.out.println("단어가 등록되어 있지 않습니다.");
             return;
         }
-        Scanner sc = new Scanner(System.in, StandardCharsets.UTF_8);
-        Random ran = new Random();
 
         System.out.print("문제 수를 입력해주세요 : ");
         int quizNum = sc.nextInt();
@@ -288,8 +292,6 @@ public class QuizManager {
             System.out.println("객관식 보기를 만들 단어(4개)가 부족합니다.");
             return;
         }
-        Scanner sc= new Scanner(System.in, StandardCharsets.UTF_8);
-        Random ran = new Random();
 
         System.out.print("문제 수를 입력해주세요 : ");
         int quizNum = sc.nextInt();
