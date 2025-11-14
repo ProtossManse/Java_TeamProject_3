@@ -53,7 +53,8 @@ public class VocabularyAppLauncher {
                 System.out.println("기본 공용 단어장 폴더(res/public/vocas)를 생성했습니다.");
             }
 
-            // 2. 공용 단어장 파일 생성 (예: 'publics.txt') //일단 기본 규칙대로 public+s 하긴 했는데 의미 상 public이 맞아 보이긴 합니다.
+            // 2. 공용 단어장 파일 생성 (예: 'publics.txt') //일단 기본 규칙대로 public+s 하긴 했는데 의미 상 public이
+            // 맞아 보이긴 합니다.
             // (이 파일이 있어야 '공용 단어장 관리' 메뉴가 비어있지 않습니다.)
             File defaultPublicFile = new File(Path.getPublicFilePath(null, "publics.txt"));
             if (!defaultPublicFile.exists()) {
