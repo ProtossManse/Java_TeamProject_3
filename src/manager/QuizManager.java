@@ -13,7 +13,7 @@ import java.util.Scanner;
 
 public class QuizManager {
 
-    static Scanner sc= new Scanner(System.in, StandardCharsets.UTF_8);
+    static Scanner sc = new Scanner(System.in, StandardCharsets.UTF_8);
     static Random ran = new Random();
 
     ArrayList<String> noteWords = new ArrayList<>(); // 오답노트에 추가될 단어들
@@ -28,7 +28,8 @@ public class QuizManager {
         // TODO: 개인 단어장 퀴즈 구현
         // 단어장 목록 출력 및 선택, 문제풀기
         String chosen = pickFileFromList("개인 단어장 선택", list);
-        if (chosen == null) return;
+        if (chosen == null)
+            return;
         ArrayList<String> words = loadWordsFromFile(chosen);
 
         if (words == null || words.isEmpty()) {
@@ -43,7 +44,8 @@ public class QuizManager {
         // TODO: 개인 오답노트 퀴즈 구현
         // 오답노트 목록 출력 및 선택, 문제풀기
         String chosen = pickFileFromList("오답노트 선택", list);
-        if (chosen == null) return;
+        if (chosen == null)
+            return;
         ArrayList<String> words = loadWordsFromFile(chosen);
 
         if (words == null || words.isEmpty()) {
@@ -86,7 +88,7 @@ public class QuizManager {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HH_mm_ss");
         String formatted = now.format(formatter);
 
-        File noteFile = new File(notes, "note-"+formatted+".txt");
+        File noteFile = new File(notes, "note-" + formatted + ".txt");
 
         try (PrintWriter pw = new PrintWriter(
                 new OutputStreamWriter(new FileOutputStream(noteFile, false), StandardCharsets.UTF_8))) {
@@ -101,7 +103,7 @@ public class QuizManager {
         noteWords.clear();
     }
 
-    private void addToNote(String aEng, String aKor){ // 주관/객관식 문제에서 오답이 나올때마다 오답노트에 추가
+    private void addToNote(String aEng, String aKor) { // 주관/객관식 문제에서 오답이 나올때마다 오답노트에 추가
         String entry = aEng + "\t" + aKor;
         if (!noteWords.contains(entry)) {
             noteWords.add(entry);
@@ -122,7 +124,8 @@ public class QuizManager {
             System.out.print("번호 선택: ");
 
             int mode = readInt();
-            if (mode == 0) break;
+            if (mode == 0)
+                break;
 
             switch (mode) {
                 case 1 -> shortAnswerQuestion(list);
@@ -139,9 +142,11 @@ public class QuizManager {
 
             for (String line : java.nio.file.Files.readAllLines(p, StandardCharsets.UTF_8)) {
                 String t = line.trim();
-                if (t.isEmpty() || t.startsWith("#")) continue;
+                if (t.isEmpty() || t.startsWith("#"))
+                    continue;
                 int tab = t.indexOf('\t');
-                if (tab <= 0 || tab == t.length() - 1) continue;
+                if (tab <= 0 || tab == t.length() - 1)
+                    continue;
                 out.add(t);
             }
             return out;
@@ -176,7 +181,8 @@ public class QuizManager {
 
         int sel = readInt();
 
-        if (sel == 0) return null;
+        if (sel == 0)
+            return null;
         if (sel < 1 || sel > files.size()) {
             System.out.println("잘못된 선택입니다.");
             return null;
@@ -205,7 +211,7 @@ public class QuizManager {
         int quizNum = sc.nextInt();
         sc.nextLine();
 
-        if(quizNum < 1) {
+        if (quizNum < 1) {
             System.out.println("1문제 이상 출제되어야 합니다.");
             return;
         } else if (quizNum > list.size()) {
@@ -214,7 +220,7 @@ public class QuizManager {
 
         boolean[] usedIndex = new boolean[list.size()];
         int score = 0;
-        for(int i = 0; i < quizNum; i++){
+        for (int i = 0; i < quizNum; i++) {
             int answerIndex;
             do {
                 answerIndex = ran.nextInt(list.size());
@@ -237,7 +243,7 @@ public class QuizManager {
             }
 
             int randquiz = ran.nextInt(2) + 1;
-            if(randquiz==1){
+            if (randquiz == 1) {
                 System.out.println("\n[" + (i + 1) + "/" + quizNum + "] " + aEng + "의 뜻은?");
                 String answer = sc.nextLine().trim();
 
@@ -252,17 +258,17 @@ public class QuizManager {
                     for (String kor : aKorList) {
                         answerStr += kor + "/ ";
                     }
-                    answerStr = answerStr.substring(0,answerStr.length()-2);
+                    answerStr = answerStr.substring(0, answerStr.length() - 2);
                     System.out.println("정답은 " + aEng + " = " + answerStr);
                 }
 
-            } else{
+            } else {
 
                 String questionStr = "";
                 for (String kor : aKorList) {
                     questionStr += kor + "/ ";
                 }
-                questionStr = questionStr.substring(0,questionStr.length()-2);
+                questionStr = questionStr.substring(0, questionStr.length() - 2);
 
                 System.out.println("\n[" + (i + 1) + "/" + quizNum + "] " + questionStr + "의 뜻은?");
                 String answer = sc.nextLine().trim();
@@ -284,7 +290,7 @@ public class QuizManager {
 
     private void multipleChoiceQuestion(ArrayList<String> list) {
         // TODO: 객관식 각 문제 구현
-        if (list == null){
+        if (list == null) {
             System.out.println("단어가 등록되어 있지 않습니다.");
             return;
         } else if (list.size() < 4) {
@@ -296,7 +302,7 @@ public class QuizManager {
         int quizNum = sc.nextInt();
         sc.nextLine();
 
-        if(quizNum < 1) {
+        if (quizNum < 1) {
             System.out.println("1문제 이상 출제되어야 합니다.");
             return;
         } else if (quizNum > list.size()) {
@@ -306,7 +312,7 @@ public class QuizManager {
         boolean[] usedIndex = new boolean[list.size()];
         ArrayList<String> wrongs = new ArrayList<>();
         int score = 0;
-        for(int i = 0; i < quizNum; i++){
+        for (int i = 0; i < quizNum; i++) {
             int answerIndex;
             do {
                 answerIndex = ran.nextInt(list.size());
@@ -350,7 +356,7 @@ public class QuizManager {
             }
 
             int choice = -1;
-            while(true){
+            while (true) {
                 System.out.print("답(1~4): ");
                 String line = sc.nextLine().trim();
                 try {

@@ -14,9 +14,12 @@ import java.util.Scanner;
 public abstract class VocaFileManager {
     File vocaFile;
     Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8);
+    String username; // [수정] 사용자 이름을 저장할 변수
 
-    VocaFileManager(String fileName) {
+    // [수정] 생성자가 username을 받도록 변경
+    VocaFileManager(String fileName, String username) {
         vocaFile = new File(fileName);
+        this.username = username; // [수정] 전달받은 username 저장
     }
 
     abstract public void menu();
