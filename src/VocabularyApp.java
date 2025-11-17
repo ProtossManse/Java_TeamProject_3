@@ -55,28 +55,39 @@ public class VocabularyApp {
 
     public void menu() {
         int choice = 0;
-        while (choice != 4) {
+        // [수정] 6번 종료가 아닌 5번 종료
+        while (choice != 5) {
             System.out.println("\n\n\n==== 단어장 메뉴 화면 ====");
             System.out.println("이름: " + currentUser.getName());
             System.out.println(currentUser.getStreak() + "일 연속 공부 중!");
             System.out.println("1. 개인 단어장 관리");
             System.out.println("2. 공용 단어장 관리");
             System.out.println("3. 퀴즈 풀기");
-            System.out.println("4. 종료하기");
-            // (오답노트 관리 메뉴는 아직 미구현 상태입니다)
+
+            // ▼▼▼ [수정된 부분] ▼▼▼
+            System.out.println("4. 오답노트 관리"); // 신규 추가
+            System.out.println("5. 종료하기"); // 기존 4번 -> 5번
+            // ▲▲▲ [수정된 부분] ▲▲▲
+
             System.out.print(">> ");
 
             try {
+                // [수정] nextInt() 대신 nextLine()을 사용하여 입력 오류 방지
                 choice = Integer.parseInt(scanner.nextLine().trim());
             } catch (NumberFormatException e) {
-                choice = -1;
+                choice = -1; // 잘못된 입력 처리
             }
 
             switch (choice) {
                 case 1 -> managePersonalVocas();
                 case 2 -> managePublicVocas();
                 case 3 -> quiz();
-                case 4 -> System.out.println("단어장 앱을 종료합니다.");
+
+                // ▼▼▼ [수정된 부분] ▼▼▼
+                case 4 -> manageNotes(); // 4번: 오답노트 관리
+                case 5 -> System.out.println("단어장 앱을 종료합니다."); // 5번: 종료
+                // ▲▲▲ [수정된 부분] ▲▲▲
+
                 default -> System.out.println("잘못된 입력입니다.");
             }
         }
@@ -265,4 +276,52 @@ public class VocabularyApp {
         }
     }
 
+    // =========== 오답노트 관리 ===========
+
+    private void manageNotes() {
+        // 'notes' 폴더의 실제 파일 목록을 가져옵니다.
+        ArrayList<String> noteFiles = getPersonalNotes();
+
+        if (noteFiles == null || noteFiles.isEmpty()) {
+            System.out.println("관리할 오답노트가 없습니다. (퀴즈를 먼저 풀어주세요)");
+            return;
+        }
+
+        while (true) {
+            System.out.println("\n==== 오답노트 관리 ====");
+            System.out.println("관리할 오답노트를 선택하세요.");
+
+            for (int i = 0; i < noteFiles.size(); i++) {
+                System.out.printf("%d) %s%n", i + 1, noteFiles.get(i));
+            }
+            System.out.println("0) 뒤로가기");
+            System.out.print(">> ");
+
+            int choice;
+            try {
+                choice = Integer.parseInt(scanner.nextLine().trim());
+            } catch (NumberFormatException e) {
+                System.out.println("숫자를 입력해주세요.");
+                continue;
+            }
+
+            if (choice == 0) {
+                return; // 메인 메뉴로
+            }
+            if (choice < 1 || choice > noteFiles.size()) {
+                System.out.println("잘못된 번호입니다.");
+                continue;
+            }
+
+            String selectedFile = noteFiles.get(choice - 1);
+            String noteFilePath = Path.getNoteFilePath(currentUser.getName(), selectedFile);
+
+            // PersonalVocaFileManager를 '오답노트' 모드(isNoteFile=true)로 실행합니다.
+            // username을 주입하여 동기화가 가능하도록 합니다.
+            VocaFileManager vocaFileManager = new PersonalVocaFileManager(
+                    noteFilePath, currentUser.getName());
+
+            vocaFileManager.menu(); // 오답노트 전용 메뉴(noteMenu) 실행
+        }
+    }
 }

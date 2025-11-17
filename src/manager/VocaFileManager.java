@@ -293,7 +293,8 @@ public abstract class VocaFileManager {
                 String[] parts = line.split("\t", 2);
                 String eng = parts.length > 0 ? parts[0].trim() : "";
                 String kor = parts.length > 1 ? parts[1].trim() : "";
-                if (eng.toLowerCase().contains(q) || kor.toLowerCase().contains(q)) {
+                if (eng.toLowerCase().contains(q) ||
+                        kor.toLowerCase().contains(q)) {
                     System.out.printf("%d) %s = %s%n", idx, eng, kor);
                     found = true;
                 }

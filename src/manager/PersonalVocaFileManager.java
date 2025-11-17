@@ -15,9 +15,10 @@ import util.Path;
 
 /**
  * (PersonalVocaFileManager.java - 최종 수정본)
- * - '오답노트' 전용 메뉴 추가 (요청사항 1, 2)
- * - 오답노트도 '*' 토글 사용 (요청사항 3 - 동기화 위해 `*` 사용)
- * - editVoca, removeVoca 동기화 포함
+ * - '오답노트' 전용 메뉴 (최소 메뉴)
+ * - '오답노트'는 Suffix '*' (apple*) 토글 사용
+ * - '개인 단어장'은 Prefix '*' (*apple) 토글 사용
+ * - 모든 동기화 로직(삭제, 수정)이 Prefix/Suffix를 구별하여 처리함
  */
 public class PersonalVocaFileManager extends VocaFileManager {
 
@@ -36,18 +37,16 @@ public class PersonalVocaFileManager extends VocaFileManager {
     }
 
     /**
-     * [수정]
-     * 진입점 메뉴입니다.
-     * 파일 타입에 따라 3가지 다른 메뉴를 호출합니다.
+     * 진입점 메뉴. 파일 타입에 따라 3가지 다른 메뉴 호출
      */
     @Override
     public void menu() {
         if (this.isFavoritesFile) {
-            specialFavoritesMenu(); // A. 즐겨찾기 (_favorites.txt)
+            specialFavoritesMenu(); // A. 즐겨찾기
         } else if (this.isNoteFile) {
-            noteMenu(); // B. 오답노트 (note-....txt)
+            noteMenu(); // B. 오답노트 (요청하신 최소 메뉴)
         } else {
-            regularMenu(); // C. 개인/공용 단어장 (vocas/..., public/vocas/...)
+            regularMenu(); // C. 개인/공용 단어장
         }
     }
 
@@ -56,12 +55,9 @@ public class PersonalVocaFileManager extends VocaFileManager {
     // ===================================================================
 
     /**
-     * [신규 추가]
-     * '오답노트' 파일을 위한 전용 메뉴입니다.
-     * '즐겨찾기' 기능만 노출합니다.
+     * [신규] '오답노트' 파일을 위한 전용 메뉴 (즐겨찾기 기능만 노출)
      */
     private void noteMenu() {
-        // 루프가 메뉴를 감싸서 즐겨찾기 토글 후 목록을 갱신합니다.
         while (true) {
             System.out.println("\n==== [오답노트 관리] ====");
 
@@ -86,14 +82,12 @@ public class PersonalVocaFileManager extends VocaFileManager {
 
             switch (choice) {
                 case 1:
-                    // 오답노트에 '*' 토글을 적용하고 동기화하는
-                    // 'favoriteWithToggle()' 메서드를 호출합니다.
+                    // 오답노트/개인단어장을 구분하여 토글하는 메서드 호출
                     favoriteWithToggle();
-                    // 토글 후 갱신된 목록을 봐야 하므로 break (while 재시작)
-                    break;
+                    break; // 목록 갱신을 위해 while 재시작
                 case 2:
                     System.out.println("메인 메뉴로 돌아갑니다.");
-                    return; // return으로 메뉴 종료
+                    return; // 메뉴 종료
             }
         }
     }
@@ -127,7 +121,6 @@ public class PersonalVocaFileManager extends VocaFileManager {
                 case 3 -> this.editVoca(); // 동기화 O
                 case 4 -> super.searchVoca();
                 case 5 -> {
-                    // [수정] 오답노트(isNoteFile)가 noteMenu()로 분리되었음
                     if (this.isPublicFile) {
                         favoriteNoToggle(); // *토글 없음 (공용)
                     } else {
@@ -141,9 +134,8 @@ public class PersonalVocaFileManager extends VocaFileManager {
     }
 
     /**
-     * (수정)
-     * VocaFileManager의 editVoca를 오버라이드(재정의)합니다.
-     * 단어 수정 시 즐겨찾기 동기화 기능을 추가합니다.
+     * (수정) VocaFileManager의 editVoca를 오버라이드.
+     * Prefix/Suffix 토글을 구별하여 동기화합니다.
      */
     @Override
     void editVoca() {
@@ -167,15 +159,35 @@ public class PersonalVocaFileManager extends VocaFileManager {
         int idx = index - 1;
         String oldLine = lines.get(idx);
 
-        // 기존 정보 파악
-        boolean wasFavorite = oldLine.startsWith("*");
-        String cleanOldLine = wasFavorite ? oldLine.substring(1) : oldLine;
-        String[] parts = cleanOldLine.split("\t", 2);
-        String oldEng = parts[0].trim();
-        String oldKor = parts.length > 1 ? parts[1].trim() : "";
+        // 1. 기존 정보 파악 (Prefix/Suffix 구분)
+        boolean wasFavorite;
+        String oldEng, oldKor;
+
+        if (this.isNoteFile) {
+            // --- 오답노트 (Suffix) 로직 ---
+            String[] parts = oldLine.split("\t", 2);
+            String engPart = parts[0].trim();
+            oldKor = parts.length > 1 ? parts[1].trim() : "";
+
+            if (engPart.endsWith("*")) {
+                wasFavorite = true;
+                oldEng = engPart.substring(0, engPart.length() - 1);
+            } else {
+                wasFavorite = false;
+                oldEng = engPart;
+            }
+        } else {
+            // --- 개인 단어장 (Prefix) 로직 ---
+            wasFavorite = oldLine.startsWith("*");
+            String cleanOldLine = wasFavorite ? oldLine.substring(1) : oldLine;
+            String[] parts = cleanOldLine.split("\t", 2);
+            oldEng = parts[0].trim();
+            oldKor = parts.length > 1 ? parts[1].trim() : "";
+        }
 
         System.out.println("현재: " + oldEng + " = " + oldKor + (wasFavorite ? " (즐겨찾기)" : ""));
 
+        // 2. 새 정보 입력 받기
         System.out.print("새 영단어 (엔터 입력 시 유지): ");
         String newEng = scanner.nextLine().trim();
         System.out.print("새 뜻 (엔터 입력 시 유지): ");
@@ -186,42 +198,56 @@ public class PersonalVocaFileManager extends VocaFileManager {
         if (newKor.isEmpty())
             newKor = oldKor;
 
-        // 중복 검사
+        // 3. 중복 검사 (모든 토글을 제거하고 순수 영단어만 비교)
         for (int i = 0; i < lines.size(); i++) {
             if (i == idx)
                 continue;
             String line = lines.get(i);
-            String cleanLine = line.startsWith("*") ? line.substring(1) : line;
-            String[] p = cleanLine.split("\t", 2);
-            String e = p[0].trim();
-            if (e.equalsIgnoreCase(newEng)) {
+
+            String cleanEngPart;
+            if (line.startsWith("*")) { // 개인 단어장
+                cleanEngPart = line.substring(1).split("\t", 2)[0].trim();
+            } else { // 오답노트 또는 토글 없음
+                cleanEngPart = line.split("\t", 2)[0].trim();
+                if (cleanEngPart.endsWith("*")) { // 오답노트
+                    cleanEngPart = cleanEngPart.substring(0, cleanEngPart.length() - 1);
+                }
+            }
+
+            if (cleanEngPart.equalsIgnoreCase(newEng)) {
                 System.out.println("오류: '" + newEng + "'(은)는 이미 다른 항목에 존재합니다.");
                 return;
             }
         }
 
-        // 새 라인 생성 (즐겨찾기 상태 유지)
-        String newLine = newEng + "\t" + newKor;
-        if (wasFavorite) {
-            newLine = "*" + newLine;
+        // 4. 새 라인 생성 (파일 타입에 맞게 토글 유지)
+        String newLine;
+        if (this.isNoteFile) {
+            // 오답노트: "d*\t4"
+            newLine = newEng + (wasFavorite ? "*" : "") + "\t" + newKor;
+        } else {
+            // 개인 단어장: "*d\t4"
+            newLine = (wasFavorite ? "*" : "") + newEng + "\t" + newKor;
         }
 
+        // 5. 파일 갱신
         lines.set(idx, newLine);
         saveFileLines(lines);
         System.out.println("수정이 완료되었습니다.");
 
-        // 즐겨찾기 동기화
+        // 6. 즐겨찾기 동기화
         if (wasFavorite) {
             System.out.println("... 즐겨찾기 동기화 중 ...");
             removeFromFavoritesFile(oldEng); // 이전 항목 제거
             addToFavoritesFile(newEng, newKor); // 새 항목 추가
+            syncRemoveStar(oldEng); // 다른 모든 파일에서 *이전* 토글 제거
             System.out.println("... 즐겨찾기 파일이 '" + newEng + "'로 업데이트되었습니다.");
         }
     }
 
     /**
-     * VocaFileManager의 removeVoca를 오버라이드(재정의)합니다.
-     * 단어 삭제 시 즐겨찾기 동기화 기능을 추가합니다.
+     * (수정) VocaFileManager의 removeVoca를 오버라이드.
+     * Prefix/Suffix 토글을 구별하여 동기화합니다.
      */
     @Override
     void removeVoca() {
@@ -248,18 +274,39 @@ public class PersonalVocaFileManager extends VocaFileManager {
         saveFileLines(lines);
         System.out.println("삭제가 완료되었습니다.");
 
-        // 즐겨찾기 동기화
-        if (lineToRemove.startsWith("*")) {
-            String[] parts = lineToRemove.substring(1).split("\t", 2);
-            String eng = parts[0].trim();
+        // --- 즐겨찾기 동기화 로직 (Prefix/Suffix 구분) ---
+        String eng;
+        boolean wasFavorite;
+
+        if (this.isNoteFile) {
+            // 오답노트 (Suffix) 로직
+            String[] parts = lineToRemove.split("\t", 2);
+            eng = parts[0].trim();
+            if (eng.endsWith("*")) {
+                wasFavorite = true;
+                eng = eng.substring(0, eng.length() - 1); // Clean eng
+            } else {
+                wasFavorite = false;
+            }
+        } else {
+            // 개인 단어장 (Prefix) 로직
+            wasFavorite = lineToRemove.startsWith("*");
+            if (wasFavorite) {
+                lineToRemove = lineToRemove.substring(1); // Clean line
+            }
+            String[] parts = lineToRemove.split("\t", 2);
+            eng = parts[0].trim();
+        }
+
+        if (wasFavorite) {
             System.out.println("... 즐겨찾기 동기화: '" + eng + "'를 즐겨찾기에서 제거합니다.");
             removeFromFavoritesFile(eng);
+            syncRemoveStar(eng); // 다른 모든 파일의 토글도 제거
         }
     }
 
     /**
-     * [개인 단어장, 오답노트]에서 사용
-     * `*` 토글 및 `_favorites.txt` 동기화
+     * [개인 단어장, 오답노트]에서 사용 (Prefix/Suffix 구분)
      */
     private void favoriteWithToggle() {
         ArrayList<String> lines = loadFileLines();
@@ -269,7 +316,6 @@ public class PersonalVocaFileManager extends VocaFileManager {
         }
 
         // 오답노트 메뉴가 아니면 목록을 다시 출력
-        // (오답노트 메뉴는 이미 목록을 출력했음)
         if (!this.isNoteFile) {
             System.out.println("===== 단어 목록 =====");
             for (int i = 0; i < lines.size(); i++)
@@ -281,30 +327,70 @@ public class PersonalVocaFileManager extends VocaFileManager {
         if (index == 0)
             return;
 
-        String selected = lines.get(index - 1);
-        String eng, kor;
+        int idx = index - 1;
+        String selected = lines.get(idx);
+        String eng, kor, cleanEng;
+        boolean isCurrentlyFavorite;
 
-        if (selected.startsWith("*")) {
-            String withoutStar = selected.substring(1);
-            lines.set(index - 1, withoutStar);
-            String[] parts = withoutStar.split("\t", 2);
-            eng = parts[0].trim();
-            removeFromFavoritesFile(eng); // 동기화
-            System.out.println("즐겨찾기 해제 완료!");
-        } else {
-            lines.set(index - 1, "*" + selected);
+        if (this.isNoteFile) {
+            // --- 오답노트 (Suffix '*') 로직 ---
             String[] parts = selected.split("\t", 2);
             eng = parts[0].trim();
             kor = parts.length > 1 ? parts[1].trim() : "";
-            addToFavoritesFile(eng, kor); // 동기화
-            System.out.println("즐겨찾기 추가 완료!");
+
+            if (eng.endsWith("*")) {
+                isCurrentlyFavorite = true;
+                cleanEng = eng.substring(0, eng.length() - 1);
+            } else {
+                isCurrentlyFavorite = false;
+                cleanEng = eng;
+            }
+
+            if (isCurrentlyFavorite) {
+                // 해제
+                lines.set(idx, cleanEng + "\t" + kor);
+                removeFromFavoritesFile(cleanEng);
+                syncRemoveStar(cleanEng); // 모든 파일 동기화
+                System.out.println("즐겨찾기 해제 완료!");
+            } else {
+                // 추가
+                lines.set(idx, cleanEng + "*\t" + kor);
+                addToFavoritesFile(cleanEng, kor);
+                System.out.println("즐겨찾기 추가 완료!");
+            }
+
+        } else {
+            // --- 개인 단어장 (Prefix '*') 로직 ---
+            if (selected.startsWith("*")) {
+                isCurrentlyFavorite = true;
+                selected = selected.substring(1); // "apple\tsound"
+            } else {
+                isCurrentlyFavorite = false;
+            }
+
+            String[] parts = selected.split("\t", 2);
+            cleanEng = parts[0].trim();
+            kor = parts.length > 1 ? parts[1].trim() : "";
+
+            if (isCurrentlyFavorite) {
+                // 해제
+                lines.set(idx, selected); // "apple\tsound"
+                removeFromFavoritesFile(cleanEng);
+                syncRemoveStar(cleanEng); // 모든 파일 동기화
+                System.out.println("즐겨찾기 해제 완료!");
+            } else {
+                // 추가
+                lines.set(idx, "*" + selected); // "*apple\tsound"
+                addToFavoritesFile(cleanEng, kor);
+                System.out.println("즐겨찾기 추가 완료!");
+            }
         }
-        saveFileLines(lines); // *토글이 적용된 파일 저장
+
+        saveFileLines(lines); // 현재 파일 저장
     }
 
     /**
-     * [공용 단어장]에서 사용
-     * 토글 없고 `_favorites.txt`만 동기화
+     * [공용 단어장]에서 사용 (토글 없음)
      */
     private void favoriteNoToggle() {
         ArrayList<String> lines = loadFileLines();
@@ -329,7 +415,7 @@ public class PersonalVocaFileManager extends VocaFileManager {
 
         if (isAlreadyInFavorites(eng)) {
             removeFromFavoritesFile(eng);
-            syncRemoveStarFromPersonalVoca(eng); // 동기화
+            syncRemoveStar(eng); // 동기화
             System.out.println("즐겨찾기 해제 완료!");
         } else {
             addToFavoritesFile(eng, kor);
@@ -343,11 +429,10 @@ public class PersonalVocaFileManager extends VocaFileManager {
     // ===================================================================
 
     private void specialFavoritesMenu() {
-
-        while (true) { // 메뉴 갱신
+        while (true) {
             System.out.println("\n==== [즐겨찾기 단어장 관리] ====");
 
-            ArrayList<String> lines = loadFileLines(); // 목록 새로고침
+            ArrayList<String> lines = loadFileLines();
             if (lines == null)
                 return;
             if (lines.isEmpty()) {
@@ -369,10 +454,10 @@ public class PersonalVocaFileManager extends VocaFileManager {
             switch (choice) {
                 case 1:
                     removeFromFavoritesMenu(lines);
-                    break; // break로 루프 계속
+                    break;
                 case 2:
                     System.out.println("메인 메뉴로 돌아갑니다.");
-                    return; // return으로 메뉴 종료
+                    return;
             }
         }
     }
@@ -389,36 +474,35 @@ public class PersonalVocaFileManager extends VocaFileManager {
 
         System.out.println("'" + eng + "' 단어를 즐겨찾기에서 제거합니다...");
         removeFromFavoritesFile(eng);
-        syncRemoveStarFromPersonalVoca(eng); // 동기화
+        syncRemoveStar(eng); // 동기화
         System.out.println("제거 및 동기화 완료.");
     }
 
     /**
-     * [핵심 동기화]
-     * `_favorites.txt`에서 삭제 시, `vocas/` 및 `notes/` 폴더를
+     * [핵심 동기화 - 수정]
+     * `vocas/` (Prefix) 및 `notes/` (Suffix) 폴더를
      * 모두 스캔하여 `*` 토글을 제거합니다.
      */
-    private void syncRemoveStarFromPersonalVoca(String eng) {
-        String username = super.username; // 주입된 username 사용
+    private void syncRemoveStar(String eng) {
+        String username = super.username;
         if (username == null) {
             System.out.println("동기화 오류: 사용자 이름을 찾을 수 없습니다.");
             return;
         }
 
-        // [수정] 스캔할 폴더 2개 지정
         File vocaDir = new File(Path.getVocaDirPath(username));
         File noteDir = new File(Path.getNoteDirPath(username));
 
-        // 두 폴더를 모두 스캔
-        scanAndRemoveStar(vocaDir, eng);
-        scanAndRemoveStar(noteDir, eng);
+        scanAndRemoveStar(vocaDir, eng, false); // false: Prefix 모드
+        scanAndRemoveStar(noteDir, eng, true); // true: Suffix 모드
     }
 
     /**
-     * syncRemoveStar...의 헬퍼 메서드.
-     * 지정된 디렉토리의 .txt 파일에서 '*'를 제거합니다.
+     * [신규 헬퍼 - 수정]
+     * syncRemoveStar의 헬퍼.
+     * isNoteFile 플래그에 따라 Prefix/Suffix 모드로 토글을 찾아 제거합니다.
      */
-    private void scanAndRemoveStar(File directory, String eng) {
+    private void scanAndRemoveStar(File directory, String eng, boolean isNoteFile) {
         if (!directory.exists())
             return;
 
@@ -439,19 +523,36 @@ public class PersonalVocaFileManager extends VocaFileManager {
 
             for (int i = 0; i < lines.size(); i++) {
                 String line = lines.get(i);
-                if (line.startsWith("*")) {
-                    String[] parts = line.substring(1).split("\t", 2);
-                    String fileEng = parts[0].trim();
+                String[] parts = line.split("\t", 2);
+                String fileEng = parts[0].trim();
+                String fileKor = parts.length > 1 ? parts[1].trim() : "";
 
-                    if (fileEng.equalsIgnoreCase(eng)) {
-                        lines.set(i, line.substring(1)); // '*' 제거
-                        fileChanged = true;
+                if (isNoteFile) {
+                    // --- 오답노트 (Suffix '*') 로직 ---
+                    if (fileEng.endsWith("*")) {
+                        String cleanEng = fileEng.substring(0, fileEng.length() - 1);
+                        if (cleanEng.equalsIgnoreCase(eng)) {
+                            lines.set(i, cleanEng + "\t" + fileKor); // Suffix '*' 제거
+                            fileChanged = true;
+                        }
+                    }
+                } else {
+                    // --- 개인 단어장 (Prefix '*') 로직 ---
+                    if (line.startsWith("*")) {
+                        String cleanLine = line.substring(1);
+                        String[] cleanParts = cleanLine.split("\t", 2);
+                        String cleanEng = cleanParts[0].trim();
+
+                        if (cleanEng.equalsIgnoreCase(eng)) {
+                            lines.set(i, cleanLine); // Prefix '*' 제거
+                            fileChanged = true;
+                        }
                     }
                 }
             }
 
             if (fileChanged) {
-                System.out.println("... 동기화: " + file.getName() + "에서 '*' 표시 제거 완료.");
+                System.out.println("... 동기화: " + file.getName() + "에서 토글 제거 완료.");
                 saveFileLines(lines, file);
             }
         }
