@@ -220,7 +220,7 @@ public class VocabularyAppLauncher {
         } else if (user.getLastDate().plusDays(1).equals(LocalDate.now())) {
             return currentStreak + 1;
         } else {
-            return 0;
+            return 1;
         }
 
     }
