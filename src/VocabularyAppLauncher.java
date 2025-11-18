@@ -47,7 +47,7 @@ public class VocabularyAppLauncher {
     private void initializeSystemResources() {
         try {
             // 1. 공용 단어장 폴더 생성 (res/public/vocas)
-            File publicVocaDir = new File(Path.getPublicDirPath(null));
+            File publicVocaDir = new File(Path.getPublicDirPath());
             if (!publicVocaDir.exists()) {
                 publicVocaDir.mkdirs();
                 System.out.println("기본 공용 단어장 폴더(res/public/vocas)를 생성했습니다.");
@@ -56,7 +56,7 @@ public class VocabularyAppLauncher {
             // 2. 공용 단어장 파일 생성 (예: 'publics.txt') //일단 기본 규칙대로 public+s 하긴 했는데 의미 상 public이
             // 맞아 보이긴 합니다.
             // (이 파일이 있어야 '공용 단어장 관리' 메뉴가 비어있지 않습니다.)
-            File defaultPublicFile = new File(Path.getPublicFilePath(null, "publics.txt"));
+            File defaultPublicFile = new File(Path.getPublicFilePath());
             if (!defaultPublicFile.exists()) {
                 defaultPublicFile.createNewFile();
 
@@ -190,9 +190,8 @@ public class VocabularyAppLauncher {
             vocasDir.mkdirs();
 
             // 3. res/username/notes/ 폴더 생성
-            // File notesDir = new File(Path.getNoteDirPath(name));
-            // notesDir.mkdirs();
-            // 오답 노트 생성은 퀴즈와 연동되어서 자동으로 이루어 지기에 인위적으로 미리 생성할 필요 없음.
+             File notesDir = new File(Path.getNoteDirPath(name));
+             notesDir.mkdirs();
 
             // 4. res/username/favorites/ 폴더 생성
             File favDir = new File(Path.getFavoriteDirPath(name));

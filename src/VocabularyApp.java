@@ -45,7 +45,7 @@ public class VocabularyApp {
 
     /** 공용 단어장 파일 목록을 가져옵니다. */
     public ArrayList<String> getPublicVocaFilesList() {
-        File dir = new File(Path.getPublicDirPath(null));
+        File dir = new File(Path.getPublicDirPath());
         String[] list = dir.list((d, name) -> name.endsWith(".txt"));
         if (list != null && list.length > 0) {
             return new ArrayList<>(Arrays.asList(list));
@@ -231,7 +231,7 @@ public class VocabularyApp {
             }
 
             String selectedFile = publicVocaFiles.get(choice - 1);
-            String publicFilePath = Path.getPublicFilePath(null, selectedFile);
+            String publicFilePath = Path.getPublicFilePath();
 
             // [필수 수정] 생성자에 currentUser.getName()을 전달
             VocaFileManager vocaFileManager = new PersonalVocaFileManager(
@@ -268,7 +268,7 @@ public class VocabularyApp {
                 case 1 -> quizManager.personalWordQuiz(getPersonalVocaFilesList());
                 case 2 -> quizManager.personalNoteQuiz(getPersonalNotes());
                 case 3 -> quizManager.personalFavoriteQuiz(Path.getFavoriteFilePath(currentUser.getName()));
-                case 4 -> quizManager.publicWordQuiz(); // (이 부분은 아직 미구현 상태)
+                case 4 -> quizManager.publicWordQuiz(Path.getPublicFilePath()); // (이 부분은 아직 미구현 상태)
                 case 5 -> quizManager.publicFrequentlyMissedQuiz();
                 case 6 -> System.out.println("메인메뉴로 돌아갑니다.");
                 default -> System.out.println("잘못된 입력입니다.");

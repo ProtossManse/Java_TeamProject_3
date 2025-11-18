@@ -68,8 +68,15 @@ public class QuizManager {
 
     }
 
-    public void publicWordQuiz() {
-        // TODO: 추후 구현
+    public void publicWordQuiz(String filename) {
+        ArrayList<String> words = loadWordsFromFile(filename);
+
+        if (words == null || words.isEmpty()) {
+            System.out.println("공용 단어가 없습니다.");
+            return;
+        }
+        QuizMenu("공용 단어장 (" + fileNameOnly(filename) + ")", words);
+
     }
 
     public void publicFrequentlyMissedQuiz() {
@@ -297,7 +304,7 @@ public class QuizManager {
         createNote(); //퀴즈가 끝난 뒤 오답노트 생성
     }
 
-    private void multipleChoiceQuestion(ArrayList<String> list) {
+    private void multipleChoiceQuestion(ArrayList<String> list, boolean isPublic) {
         // TODO: 객관식 각 문제 구현
         if (list == null) {
             System.out.println("단어가 등록되어 있지 않습니다.");

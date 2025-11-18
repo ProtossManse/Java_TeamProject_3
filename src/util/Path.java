@@ -33,12 +33,12 @@ public class Path {
         return "res/" + username + "/favorites/_favorites.txt";
     }
 
-    public static String getPublicDirPath(String username) {
+    public static String getPublicDirPath() {
         return "res/public/vocas";
     }
 
-    public static String getPublicFilePath(String username, String filename) {
-        return "res/public/vocas/" + filename;
+    public static String getPublicFilePath() {
+        return "res/public/vocas/publics.txt";
     }
 
 }
