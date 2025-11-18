@@ -25,8 +25,20 @@ public class Path {
         return "res/" + username + "/notes/" + filename;
     }
 
+    public static String getFavoriteDirPath(String username) {
+        return "res/" + username + "/favorites/";
+    }
+
     public static String getFavoriteFilePath(String username) {
-        return "res/" + username + "/vocas/_favorite.txt";
+        return "res/" + username + "/favorites/_favorites.txt";
+    }
+
+    public static String getPublicDirPath() {
+        return "res/public/vocas";
+    }
+
+    public static String getPublicFilePath() {
+        return "res/public/vocas/publics.txt";
     }
 
     public static String getPublicVocaDirPath() {

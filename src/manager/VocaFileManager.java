@@ -11,15 +11,27 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
 
+/**
+ * (VocaFileManager.java - 수정본)
+ * 모든 단어장 관리자의 부모 클래스입니다.
+ */
 public abstract class VocaFileManager {
     File vocaFile;
     Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8);
+    String username; // [필수 수정] 현재 로그인한 사용자 이름을 저장
 
-    VocaFileManager(String fileName) {
+    /**
+     * [필수 수정]
+     * 생성자가 파일 경로와 함께 사용자 이름(username)을 받도록 변경합니다.
+     */
+    VocaFileManager(String fileName, String username) {
         vocaFile = new File(fileName);
+        this.username = username; // 전달받은 username 저장
     }
 
     abstract public void menu();
+
+    // --- (이하 단어 추가/수정/검색 기능은 기존과 동일) ---
 
     void addVoca() {
         System.out.println("==== 단어 추가 ====");
@@ -91,6 +103,11 @@ public abstract class VocaFileManager {
         }
     }
 
+    /**
+     * [참고]
+     * 이 '단어 삭제' 기능은 PersonalVocaFileManager에 의해 오버라이드(재정의) 됩니다.
+     * 이 메서드는 동기화 기능이 없는 원본입니다.
+     */
     void removeVoca() {
         System.out.println("==== 단어 삭제 ====");
         ArrayList<String> lines = new ArrayList<>();
@@ -276,7 +293,8 @@ public abstract class VocaFileManager {
                 String[] parts = line.split("\t", 2);
                 String eng = parts.length > 0 ? parts[0].trim() : "";
                 String kor = parts.length > 1 ? parts[1].trim() : "";
-                if (eng.toLowerCase().contains(q) || kor.toLowerCase().contains(q)) {
+                if (eng.toLowerCase().contains(q) ||
+                        kor.toLowerCase().contains(q)) {
                     System.out.printf("%d) %s = %s%n", idx, eng, kor);
                     found = true;
                 }
