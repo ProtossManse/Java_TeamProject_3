@@ -29,4 +29,11 @@ public class Path {
         return "res/" + username + "/vocas/_favorite.txt";
     }
 
+    public static String getPublicVocaDirPath() {
+        return "res/public/vocas/";   // 실제 폴더 구조에 맞게 수정
+    }
+
+    public static String getPublicVocaFilePath(String filename) {
+        return "res/public/vocas/" + filename;
+    }
 }

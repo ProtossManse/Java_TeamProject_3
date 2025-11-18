@@ -155,6 +155,14 @@ public class VocabularyApp {
         // TODO: 추후 구현
     }
 
+    public ArrayList<String> getPublicVocaFilesList() {
+        File dir = new File(Path.getPublicVocaDirPath());
+
+        String[] list = dir.list();
+        if (list != null) {
+            return new ArrayList<>(Arrays.asList(list));
+        } else return null;
+    }
 
     // =========== 퀴즈 ===========
 
@@ -180,7 +188,7 @@ public class VocabularyApp {
                 case 1 -> quizManager.personalWordQuiz(getPersonalVocaFilesList());
                 case 2 -> quizManager.personalNoteQuiz(getPersonalNotes());
                 case 3 -> quizManager.personalFavoriteQuiz(Path.getFavoriteFilePath(currentUser.getName()));
-                case 4 -> quizManager.publicWordQuiz();
+                case 4 -> quizManager.publicWordQuiz(getPublicVocaFilesList());
                 case 5 -> quizManager.publicFrequentlyMissedQuiz();
                 case 6 -> System.out.println("메인메뉴로 돌아갑니다.");
             }

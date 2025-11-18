@@ -18,56 +18,68 @@ public class QuizManager {
 
     ArrayList<String> noteWords = new ArrayList<>(); // 오답노트에 추가될 단어들
     final User username;
-    private String currentSourceFile = null;
 
     public QuizManager(User username) {
         this.username = username;
     }
 
     public void personalWordQuiz(ArrayList<String> list) {
-        // TODO: 개인 단어장 퀴즈 구현
-        // 단어장 목록 출력 및 선택, 문제풀기
+        //단어장 목록 출력 및 선택
         String chosen = pickFileFromList("개인 단어장 선택", list);
         if (chosen == null) return;
-        ArrayList<String> words = loadWordsFromFile(chosen);
-
+        //파일명을 전체 경로로 변환
+        String fullPath = Path.getVocaFilePath(username.getName(), chosen);
+        //파일에서 단어 읽기
+        ArrayList<String> words = loadWordsFromFile(fullPath);
         if (words == null || words.isEmpty()) {
             System.out.println("단어가 등록되어 있지 않습니다.");
             return;
         }
-        currentSourceFile = chosen;
-        QuizMenu("개인 단어장 -" + fileNameOnly(chosen) + "-", words);
+        // 퀴즈 메뉴로 넘기기
+        QuizMenu("개인 단어장 -" + fileNameOnly(fullPath) + "- ", words);
     }
 
     public void personalNoteQuiz(ArrayList<String> list) {
-        // TODO: 개인 오답노트 퀴즈 구현
-        // 오답노트 목록 출력 및 선택, 문제풀기
+        // 오답노트 목록 출력 및 선택
         String chosen = pickFileFromList("오답노트 선택", list);
         if (chosen == null) return;
-        ArrayList<String> words = loadWordsFromFile(chosen);
-
+        // 파일명을 전체 경로로 변환
+        String fullPath = Path.getNoteFilePath(username.getName(), chosen);
+        // 파일에서 단어 읽기
+        ArrayList<String> words = loadWordsFromFile(fullPath);
         if (words == null || words.isEmpty()) {
             System.out.println("오답노트가 비어 있습니다.");
             return;
         }
-        currentSourceFile = chosen;
-        QuizMenu("오답노트 -" + fileNameOnly(chosen) + "-", words);
+        // 퀴즈 메뉴로 넘기기
+        QuizMenu("오답노트 -" + fileNameOnly(fullPath) + "- ", words);
     }
 
     public void personalFavoriteQuiz(String favoriteWordsFilename) {
-        // TODO: 즐겨찾기 퀴즈 구현
+        // 파일에서 단어 읽기
         ArrayList<String> words = loadWordsFromFile(favoriteWordsFilename);
-
         if (words == null || words.isEmpty()) {
             System.out.println("즐겨찾기 단어가 없습니다.");
             return;
         }
+        // 퀴즈 메뉴로 넘기기
         QuizMenu("즐겨찾기 (" + fileNameOnly(favoriteWordsFilename) + ")", words);
-
     }
 
-    public void publicWordQuiz() {
-        // TODO: 추후 구현
+    public void publicWordQuiz(ArrayList<String> list) {
+        // 공용 단어장 목록 출력 및 선택
+        String chosen = pickFileFromList("공용 단어장 선택", list);
+        if (chosen == null) return;
+        // 파일명을 전체 경로로 변환
+        String fullPath = Path.getPublicVocaFilePath(chosen);
+        // 파일에서 단어 읽기
+        ArrayList<String> words = loadWordsFromFile(fullPath);
+        if (words == null || words.isEmpty()) {
+            System.out.println("단어가 등록되어 있지 않습니다.");
+            return;
+        }
+        // 퀴즈 메뉴로 넘기기
+        QuizMenu("공용 단어장 -" + fileNameOnly(fullPath) + "- ", words);
     }
 
     public void publicFrequentlyMissedQuiz() {
@@ -283,7 +295,7 @@ public class QuizManager {
     }
 
     private void multipleChoiceQuestion(ArrayList<String> list) {
-        // TODO: 객관식 각 문제 구현
+        //단어가 없거나 보기 4개를 만들 수 없는 경우 반환
         if (list == null){
             System.out.println("단어가 등록되어 있지 않습니다.");
             return;
@@ -292,31 +304,36 @@ public class QuizManager {
             return;
         }
 
+        //문제 수 입력
         System.out.print("문제 수를 입력해주세요 : ");
         int quizNum = sc.nextInt();
         sc.nextLine();
 
-        if(quizNum < 1) {
+        if (quizNum < 1) {
             System.out.println("1문제 이상 출제되어야 합니다.");
             return;
         } else if (quizNum > list.size()) {
             quizNum = list.size();
         }
 
-        boolean[] usedIndex = new boolean[list.size()];
-        ArrayList<String> wrongs = new ArrayList<>();
+        boolean[] usedIndex = new boolean[list.size()]; //중복 문제 방지
         int score = 0;
-        for(int i = 0; i < quizNum; i++){
+
+        for (int i = 0; i < quizNum; i++) {
+
+            //정답 단어 인덱스 추출
             int answerIndex;
             do {
                 answerIndex = ran.nextInt(list.size());
             } while (usedIndex[answerIndex]);
             usedIndex[answerIndex] = true;
 
+            //정답 단어 분리 (eng, kor)
             String[] a = list.get(answerIndex).split("\t", 2);
             String aEng = a[0].trim();
             String aKor = a[1].trim();
 
+            //4개의 보기 인덱스 구성 (첫 번째는 정답)
             int[] choiceIndex = new int[4];
             choiceIndex[0] = answerIndex;
             int filled = 1;
@@ -334,6 +351,7 @@ public class QuizManager {
                     choiceIndex[filled++] = r;
             }
 
+            //보기 섞기
             for (int k = 0; k < 4; k++) {
                 int s = ran.nextInt(4);
                 int temp = choiceIndex[k];
@@ -341,33 +359,35 @@ public class QuizManager {
                 choiceIndex[s] = temp;
             }
 
+            //문제 출력
             System.out.println("\n[" + (i + 1) + "/" + quizNum + "] " + aEng + "의 뜻은?");
             for (int k = 0; k < 4; k++) {
                 String[] s = list.get(choiceIndex[k]).split("\t", 2);
                 String kor = s[1].trim();
-                String showKor = kor.contains("/") ? kor.split("/")[0].trim() : kor;
+                String showKor = kor.contains("/") ? kor.split("/")[0].trim() : kor; // 뜻 여러 개 중 첫 번째 표시
                 System.out.println((k + 1) + ") " + showKor);
             }
 
+            //사용자 입력 (1~4)
             int choice = -1;
-            while(true){
+            while (true) {
                 System.out.print("답(1~4): ");
                 String line = sc.nextLine().trim();
                 try {
                     choice = Integer.parseInt(line);
                     if (1 <= choice && choice <= 4)
                         break;
-
                     System.out.println("1~4 사이의 숫자를 입력하세요.");
                 } catch (NumberFormatException e) {
                     System.out.println("숫자를 입력하세요.");
                 }
             }
-
+            //정답 확인
             if (choiceIndex[choice - 1] == answerIndex) {
                 System.out.println("정답!");
                 score++;
             } else {
+                //정답 보기 번호 찾기
                 int correctNum = -1;
                 for (int k = 0; k < 4; k++) {
                     if (choiceIndex[k] == answerIndex) {
@@ -378,9 +398,9 @@ public class QuizManager {
                 System.out.println("오답!");
                 addToNote(aEng, aKor);
                 System.out.println("정답은 [" + correctNum + "번] " + aEng + " = " + aKor);
-                wrongs.add(aEng + "\t" + aKor);
             }
         }
+        //결과 출력 + 오답노트 생성
         System.out.printf("\n총 %d문제 중 %d개 정답 (정답률 %.1f%%)\n", quizNum, score, 100.0 * score / quizNum);
         createNote();
     }
