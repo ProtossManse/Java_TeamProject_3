@@ -16,6 +16,30 @@ public class QuizManager {
     static Scanner sc = new Scanner(System.in, StandardCharsets.UTF_8);
     static Random ran = new Random();
 
+    private static class PublicWord {
+        String english;
+        String korean;
+        int questions;
+        int correct;
+
+        PublicWord(String english, String korean, int questions, int correct) {
+            this.english = english;
+            this.korean = korean;
+            this.questions = questions;
+            this.correct = correct;
+        }
+
+        public String getCorrectRate() {
+            return ((correct/questions) * 100) + "%";
+        }
+
+
+        @Override
+        public String toString() {
+            return english + "\t" + korean + "\t" + questions + "\t" + correct;
+        }
+    }
+
     ArrayList<String> noteWords = new ArrayList<>(); // 오답노트에 추가될 단어들
     final User user; //현재 사용자
 
@@ -28,15 +52,15 @@ public class QuizManager {
         String chosen = pickFileFromList("개인 단어장 선택", list);
         if (chosen == null) return;
         //파일명을 전체 경로로 변환
-        String fullPath = Path.getVocaFilePath(username.getName(), chosen);
+        String fullPath = Path.getVocaFilePath(user.getName(), chosen);
         //파일에서 단어 읽기
-        ArrayList<String> words = loadWordsFromFile(fullPath);
+        ArrayList<PublicWord> words = loadWordsFromFile(fullPath);
         if (words == null || words.isEmpty()) {
             System.out.println("단어가 등록되어 있지 않습니다.");
             return;
         }
         // 퀴즈 메뉴로 넘기기
-        QuizMenu("개인 단어장 -" + fileNameOnly(fullPath) + "- ", words);
+        QuizMenu("개인 단어장 -" + fileNameOnly(fullPath) + "- ", words, null);
     }
 
 
@@ -45,26 +69,26 @@ public class QuizManager {
         String chosen = pickFileFromList("오답노트 선택", list);
         if (chosen == null) return;
         // 파일명을 전체 경로로 변환
-        String fullPath = Path.getNoteFilePath(username.getName(), chosen);
+        String fullPath = Path.getNoteFilePath(user.getName(), chosen);
         // 파일에서 단어 읽기
-        ArrayList<String> words = loadWordsFromFile(fullPath);
+        ArrayList<PublicWord> words = loadWordsFromFile(fullPath);
         if (words == null || words.isEmpty()) {
             System.out.println("오답노트가 비어 있습니다.");
             return;
         }
         // 퀴즈 메뉴로 넘기기
-        QuizMenu("오답노트 -" + fileNameOnly(fullPath) + "- ", words);
+        QuizMenu("오답노트 -" + fileNameOnly(fullPath) + "- ", words, null);
     }
 
     public void personalFavoriteQuiz(String favoriteWordsFilename) {
         // 파일에서 단어 읽기
-        ArrayList<String> words = loadWordsFromFile(favoriteWordsFilename);
+        ArrayList<PublicWord> words = loadWordsFromFile(favoriteWordsFilename);
         if (words == null || words.isEmpty()) {
             System.out.println("즐겨찾기 단어가 없습니다.");
             return;
         }
         // 퀴즈 메뉴로 넘기기
-        QuizMenu("즐겨찾기 (" + fileNameOnly(favoriteWordsFilename) + ")", words);
+        QuizMenu("즐겨찾기 (" + fileNameOnly(favoriteWordsFilename) + ")", words, null);
     }
 
     public void publicWordQuiz(ArrayList<String> list) {
@@ -74,13 +98,13 @@ public class QuizManager {
         // 파일명을 전체 경로로 변환
         String fullPath = Path.getPublicVocaFilePath(chosen);
         // 파일에서 단어 읽기
-        ArrayList<String> words = loadWordsFromFile(fullPath);
+        ArrayList<PublicWord> words = loadWordsFromFile(fullPath);
         if (words == null || words.isEmpty()) {
             System.out.println("단어가 등록되어 있지 않습니다.");
             return;
         }
         // 퀴즈 메뉴로 넘기기
-        QuizMenu("공용 단어장 -" + fileNameOnly(fullPath) + "- ", words);
+        QuizMenu("공용 단어장 -" + fileNameOnly(fullPath) + "- ", words, fullPath);
     }
 
 
@@ -125,7 +149,7 @@ public class QuizManager {
         }
     }
 
-    private void QuizMenu(String title, ArrayList<String> list) {
+    private void QuizMenu(String title, ArrayList<PublicWord> list, String filePath) {
         if (list == null || list.isEmpty()) {
             System.out.println("단어가 등록되어 있지 않습니다.");
             return;
@@ -143,26 +167,44 @@ public class QuizManager {
                 break;
 
             switch (mode) {
-                case 1 -> shortAnswerQuestion(list);
-                case 2 -> multipleChoiceQuestion(list);
+                case 1 -> shortAnswerQuestion(list, filePath);
+                case 2 -> multipleChoiceQuestion(list, filePath);
                 default -> System.out.println("잘못된 선택입니다.");
             }
         }
     }
 
-    private ArrayList<String> loadWordsFromFile(String pathStr) {
+    private ArrayList<PublicWord> loadWordsFromFile(String pathStr) {
         try {
             java.nio.file.Path p = java.nio.file.Paths.get(pathStr);
-            ArrayList<String> out = new ArrayList<>();
+            if (!java.nio.file.Files.exists(p)) {
+                return new ArrayList<>(); // Return empty list if file doesn't exist
+            }
+            ArrayList<PublicWord> out = new ArrayList<>();
 
             for (String line : java.nio.file.Files.readAllLines(p, StandardCharsets.UTF_8)) {
                 String t = line.trim();
                 if (t.isEmpty() || t.startsWith("#"))
                     continue;
-                int tab = t.indexOf('\t');
-                if (tab <= 0 || tab == t.length() - 1)
+
+                String[] parts = t.split("\t");
+                if (parts.length < 2)
                     continue;
-                out.add(t);
+
+                String english = parts[0].trim();
+                String korean = parts[1].trim();
+                int questions = 0;
+                int correct = 0;
+
+                if (parts.length >= 4) {
+                    try {
+                        questions = Integer.parseInt(parts[2].trim());
+                        correct = Integer.parseInt(parts[3].trim());
+                    } catch (NumberFormatException e) {
+                        // silently ignore invalid stats
+                    }
+                }
+                out.add(new PublicWord(english, korean, questions, correct));
             }
             return out;
 
@@ -216,8 +258,8 @@ public class QuizManager {
         }
     }
 
-    private void shortAnswerQuestion(ArrayList<String> list) {
-        if (list == null) { //받은 리스트에 단어가 하나도 없으면
+    private void shortAnswerQuestion(ArrayList<PublicWord> list, String filePath) {
+        if (list == null || list.isEmpty()) {
             System.out.println("단어가 등록되어 있지 않습니다.");
             return;
         }
@@ -243,10 +285,11 @@ public class QuizManager {
             } while (usedIndex[answerIndex]); //중복되지 않을 때까지
             usedIndex[answerIndex] = true; //성공적으로 고른 단어를 중복 표시
 
-            // aEng (영어), aKor (한국어) 나누기
-            String[] a = list.get(answerIndex).split("\t", 2);
-            String aEng = a[0].trim();
-            String aKor = a[1].trim();
+            PublicWord word = list.get(answerIndex);
+            word.questions++;
+
+            String aEng = word.english;
+            String aKor = word.korean;
 
             ArrayList<String> aKorList = new ArrayList<>(); //한국어 뜻이 2개 이상인 경우를 위함
 
@@ -268,6 +311,7 @@ public class QuizManager {
                 if (aKorList.contains(answer) || aKor.equals(answer)) { //한국어 뜻 중 하나만 적거나 전부 적으면
                     System.out.println("정답!");
                     score++; //점수 증가
+                    word.correct++;
                 } else {
                     System.out.println("오답!");
                     addToNote(aEng, aKor); //오답노트에 추가될 단어를 리스트에 추가
@@ -296,6 +340,7 @@ public class QuizManager {
                 if (answer.equals(aEng)) { //입력한 영어와 같다면
                     System.out.println("정답!");
                     score++; //점수 증가
+                    word.correct++;
                 } else {
                     System.out.println("오답!");
                     addToNote(aEng, aKor); //오답노트에 추가될 단어를 리스트에 추가
@@ -306,10 +351,15 @@ public class QuizManager {
         }
         // (형식: 총 {문제 수}문제 중 {맞힌 개수}개 정답 (정답률 {소수점 첫째자리까지의 정답률})
         System.out.printf("\n총 %d문제 중 %d개 정답 (정답률 %.1f%%)\n", quizNum, score, 100.0 * score / quizNum);
+
+        if (filePath != null) {
+            updateWordFile(filePath, list);
+        }
+
         createNote(); //퀴즈가 끝난 뒤 오답노트 생성
     }
 
-    private void multipleChoiceQuestion(ArrayList<String> list) {
+    private void multipleChoiceQuestion(ArrayList<PublicWord> list, String filePath) {
         //단어가 없거나 보기 4개를 만들 수 없는 경우 반환
         if (list == null){
             System.out.println("단어가 등록되어 있지 않습니다.");
@@ -343,10 +393,11 @@ public class QuizManager {
             } while (usedIndex[answerIndex]);
             usedIndex[answerIndex] = true;
 
-            //정답 단어 분리 (eng, kor)
-            String[] a = list.get(answerIndex).split("\t", 2);
-            String aEng = a[0].trim();
-            String aKor = a[1].trim();
+            PublicWord word = list.get(answerIndex);
+            word.questions++;
+
+            String aEng = word.english;
+            String aKor = word.korean;
 
             //4개의 보기 인덱스 구성 (첫 번째는 정답)
             int[] choiceIndex = new int[4];
@@ -377,8 +428,8 @@ public class QuizManager {
             //문제 출력
             System.out.println("\n[" + (i + 1) + "/" + quizNum + "] " + aEng + "의 뜻은?");
             for (int k = 0; k < 4; k++) {
-                String[] s = list.get(choiceIndex[k]).split("\t", 2);
-                String kor = s[1].trim();
+                PublicWord choiceWord = list.get(choiceIndex[k]);
+                String kor = choiceWord.korean;
                 String showKor = kor.contains("/") ? kor.split("/")[0].trim() : kor; // 뜻 여러 개 중 첫 번째 표시
                 System.out.println((k + 1) + ") " + showKor);
             }
@@ -401,6 +452,7 @@ public class QuizManager {
             if (choiceIndex[choice - 1] == answerIndex) {
                 System.out.println("정답!");
                 score++;
+                word.correct++;
             } else {
                 //정답 보기 번호 찾기
                 int correctNum = -1;
@@ -417,6 +469,23 @@ public class QuizManager {
         }
         //결과 출력 + 오답노트 생성
         System.out.printf("\n총 %d문제 중 %d개 정답 (정답률 %.1f%%)\n", quizNum, score, 100.0 * score / quizNum);
+
+        if (filePath != null) {
+            updateWordFile(filePath, list);
+        }
+
         createNote();
+    }
+
+    private void updateWordFile(String filePath, ArrayList<PublicWord> words) {
+        try (PrintWriter pw = new PrintWriter(
+                new OutputStreamWriter(new FileOutputStream(filePath, false), StandardCharsets.UTF_8))) {
+            for (PublicWord word : words) {
+                pw.println(word.toString());
+            }
+            System.out.println("단어 통계를 파일에 저장했습니다.");
+        } catch (IOException e) {
+            System.out.println("단어 통계 저장 중 오류 발생: " + e.getMessage());
+        }
     }
 }
