@@ -85,7 +85,63 @@ public class QuizManager {
 
 
     public void publicFrequentlyMissedQuiz() {
-        // TODO: 추후 구현
+        public void publicFrequentlyMissedQuiz(ArrayList<String> list) {
+            // 1. 통계 단어장 파일 선택
+            String chosen = pickFileFromList("통계 단어장 선택", list);
+            if (chosen == null) return;
+
+            // 2. 전체 경로 변환
+            String fullPath = Path.getPublicVocaFilePath(chosen);
+
+
+            // 3. 파일 읽기
+            ArrayList<String> lines = loadWordsFromFile(fullPath);
+            if (lines == null || lines.isEmpty()) {
+                System.out.println("통계 정보가 있는 단어가 없습니다.");
+                return;
+            }
+
+            // 4. 정답률 < 0.5 단어만 필터링
+            ArrayList<String> filtered = new ArrayList<>();
+
+            for (String line : lines) {
+                String[] parts = line.split("\t");
+                if (parts.length < 2) continue; // eng, kor 미존재
+
+                String eng = parts[0].trim();
+                String kor = parts[1].trim();
+
+                int total = 0;
+                int correct = 0;
+
+                if (parts.length >= 3) {
+                    try { total = Integer.parseInt(parts[2].trim()); }
+                    catch (NumberFormatException ignored) {}
+                }
+                if (parts.length >= 4) {
+                    try { correct = Integer.parseInt(parts[3].trim()); }
+                    catch (NumberFormatException ignored) {}
+                }
+
+                // total==0이면 출제한 적 없으니 제외
+                if (total == 0) continue;
+
+                double accuracy = (double) correct / total;
+
+                // 정답률 50% 미만인 단어만 포함
+                if (accuracy < 0.5) {
+                    // 기존 퀴즈 메소드가 eng\kor만 쓰므로 앞 2개만 전달
+                    filtered.add(eng + "\t" + kor);
+                }
+            }
+
+            if (filtered.isEmpty()) {
+                System.out.println("정답률 50% 미만인 단어가 없습니다.");
+                return;
+            }
+
+            QuizMenu("정답률 50% 미만 공용단어장 퀴즈 - " + fileNameOnly(fullPath), filtered);
+        }
     }
 
     private void createNote() { // 주어진 문제를 전부 풀고 난 뒤 오답노트 파일 만들기
