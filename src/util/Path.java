@@ -40,12 +40,5 @@ public class Path {
     public static String getPublicFilePath() {
         return "res/public/vocas/publics.txt";
     }
-
-    public static String getPublicVocaDirPath() {
-        return "res/public/vocas/";   // 실제 폴더 구조에 맞게 수정
-    }
-
-    public static String getPublicVocaFilePath(String filename) {
-        return "res/public/vocas/" + filename;
-    }
 }
+
