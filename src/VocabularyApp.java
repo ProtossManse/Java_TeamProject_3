@@ -269,7 +269,7 @@ public class VocabularyApp {
                 case 2 -> quizManager.personalNoteQuiz(getPersonalNotes());
                 case 3 -> quizManager.personalFavoriteQuiz(Path.getFavoriteFilePath(currentUser.getName()));
                 case 4 -> quizManager.publicWordQuiz(getPublicVocaFilesList()); // (이 부분은 아직 미구현 상태)
-                case 5 -> quizManager.publicFrequentlyMissedQuiz();
+                case 5 -> quizManager.publicFrequentlyMissedQuiz(getPublicVocaFilesList());
                 case 6 -> System.out.println("메인메뉴로 돌아갑니다.");
                 default -> System.out.println("잘못된 입력입니다.");
             }

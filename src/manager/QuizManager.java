@@ -320,11 +320,22 @@ public class QuizManager {
 
             int randquiz = ran.nextInt(2) + 1; //한국어 -> 영어 | 영어 -> 한국어 문제 형식 정하기
             if (randquiz == 1) { //영어 -> 한국어
+
                 //문제 출력 (형식: [문제 번호/총 문제수] '영어'의 뜻은?)
                 System.out.println("\n[" + (i + 1) + "/" + quizNum + "] " + aEng + "의 뜻은?");
-                String answer = sc.nextLine().trim();
+                String answer = sc.nextLine().trim(); //대답에 모든 공백 지우기
 
-                if (aKorList.contains(answer) || aKor.equals(answer)) { //한국어 뜻 중 하나만 적거나 전부 적으면
+                String[] userAnswers = answer.split("/"); // 슬래시를 기준으로 답 나누기
+                boolean isCorrect = true; //정답인지 아닌지 판별
+
+                for (String userAnswer : userAnswers) { //나눠진 답들 하나씩 볼 때
+                    if (!aKorList.contains(userAnswer.trim())) {  // 하나라도 정답에 없으면
+                        isCorrect = false; //오답 처리
+                        break;
+                    }
+                }
+
+                if (isCorrect) {
                     System.out.println("정답!");
                     score++; //점수 증가
                 } else {
@@ -333,9 +344,9 @@ public class QuizManager {
 
                     String answerStr = ""; //출력할 정답
                     for (String kor : aKorList) {
-                        answerStr += kor + "/ "; //한국어 / 한국어2 / ... / 형식
+                        answerStr += kor + "/"; //한국어/한국어2/ ... / 형식
                     }
-                    answerStr = answerStr.substring(0, answerStr.length() - 2); //맨 마지막의 /를 지우기
+                    answerStr = answerStr.substring(0, answerStr.length() - 1); //맨 마지막의 /를 지우기
                     System.out.println("정답은 " + aEng + " = " + answerStr); //(형식: 정답은 '영어' = '한국어 / 한국어2 / ...)
                 }
 
@@ -344,12 +355,12 @@ public class QuizManager {
                 // answerStr과 같은 원리
                 String questionStr = "";
                 for (String kor : aKorList) {
-                    questionStr += kor + "/ ";
+                    questionStr += kor + "/";
                 }
-                questionStr = questionStr.substring(0, questionStr.length() - 2);
+                questionStr = questionStr.substring(0, questionStr.length() - 1);
 
-                //문제 출력 (형식: [문제 번호/총 문제수] '한국어'의 뜻은?)
-                System.out.println("\n[" + (i + 1) + "/" + quizNum + "] " + questionStr + "의 뜻은?");
+                //문제 출력 (형식: [문제 번호/총 문제수] '한국어'를(을) 영어로 하면?)
+                System.out.println("\n[" + (i + 1) + "/" + quizNum + "] " + "'" + questionStr + "'" + "를(을) 영어로 하면?");
                 String answer = sc.nextLine().trim();
 
                 if (answer.equals(aEng)) { //입력한 영어와 같다면
