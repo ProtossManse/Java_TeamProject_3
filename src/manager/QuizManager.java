@@ -383,7 +383,7 @@ public class QuizManager {
                 if (answer.toLowerCase().equals(aEng)) { //입력한 영어와 같다면
                     System.out.println("정답!");
                     if (isPublic && word instanceof PublicWord) {
-                        ((PublicWord) word).questions++;
+                        ((PublicWord) word).correct++;
                     }
                     this.score++; //점수 증가
                 } else {
@@ -419,19 +419,23 @@ public class QuizManager {
         while (!mutableWords.isEmpty() && i < words.size()) {
 
             int randomIndex = ran.nextInt(mutableWords.size());
-            Word answer = mutableWords.get(randomIndex);
+            Word word = mutableWords.get(randomIndex);
             mutableWords.remove(randomIndex);
-            String aEng = answer.getEnglish();
-            String aKor = answer.getKorean();
+            String aEng = word.getEnglish();
+            String aKor = word.getKorean();
+
+            if (isPublic && word instanceof PublicWord) {
+                ((PublicWord) word).questions++;
+            }
 
             // 무작위 temp 배열 생성 (정답 외 보기 용)
             ArrayList<Word> temp = new ArrayList<>(words);
-            temp.remove(answer);
+            temp.remove(word);
             Collections.shuffle(temp);
 
             // 보기 구성
             ArrayList<Word> choices = new ArrayList<>();
-            choices.add(answer);
+            choices.add(word);
             choices.addAll(temp.subList(0, 3));
 
             //보기 섞기
@@ -439,7 +443,7 @@ public class QuizManager {
 
 
             //문제 출력
-            System.out.println("\n[" + (i + 1) + "/" + words.size() + "] " + answer.getEnglish() + "의 뜻은?");
+            System.out.println("\n[" + (i + 1) + "/" + words.size() + "] " + word.getEnglish() + "의 뜻은?");
 
             for (int j = 0; j < choices.size(); j++) {
                 String kor = choices.get(j).getKorean();
@@ -462,15 +466,18 @@ public class QuizManager {
                 }
             }
             //정답 확인
-            if (choices.get(choice - 1).equals(answer)) {
+            if (choices.get(choice - 1).equals(word)) {
                 System.out.println("정답!");
+                if (isPublic && word instanceof PublicWord) {
+                    ((PublicWord) word).correct++;
+                }
                 this.score++;
             } else {
                 //정답 보기 번호 찾기
                 int correctNum = -1;
                 for (int k = 0; k < choices.size(); k++) {
-                    if (choices.get(k).equals(answer)) {
-                        correctNum = choices.indexOf(answer) + 1;
+                    if (choices.get(k).equals(word)) {
+                        correctNum = choices.indexOf(word) + 1;
                         break;
                     }
                 }
@@ -483,6 +490,9 @@ public class QuizManager {
         //결과 출력 + 오답노트 생성
         System.out.printf("\n총 %d문제 중 %d개 정답 (정답률 %.1f%%)\n",
                 words.size(), this.score, 100.0 * this.score / words.size());
+        if (isPublic) {
+            updateStatistics(words);
+        }
         createNote();
     }
 
