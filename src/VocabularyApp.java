@@ -201,6 +201,14 @@ public class VocabularyApp {
             return;
         }
 
+        // 영문, 숫자, 한글, 하이픈(-), 언더바(_), 점(.) 만 허용
+        // 특수문자(\, /, :, *, ?, ", <, >, | 등) 입력 시 차단
+        // IOExeption을 방지하기 위해!
+        if (!filename.matches("^[a-zA-Z0-9가-힣-_.]+$")) {
+            System.out.println("파일 이름에는 특수문자를 사용할 수 없습니다.");
+            return;
+        }
+
         if (!filename.endsWith(".txt")) {
             filename += ".txt";
             // 확장자 .txt를 자동으로 추가
