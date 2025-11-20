@@ -160,7 +160,7 @@ public class QuizManager {
 
 
             // 정답률 50% 미만인 단어만 포함
-            if (word.getCorrectionRate() < 0.5) {
+            if (word.getCorrectionRate() < 50) {
                 filtered.add(word);
             }
         }
