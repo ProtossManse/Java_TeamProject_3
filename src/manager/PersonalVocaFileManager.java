@@ -217,8 +217,30 @@ public class PersonalVocaFileManager extends VocaFileManager {
         // 2. 새 정보 입력 받기
         System.out.print("새 영단어 (엔터 입력 시 유지): ");
         String newEng = scanner.nextLine().trim();
+
+        if (!newEng.isEmpty()) {
+            // 영단어는 탭, 띄어쓰기 금지
+            if (newEng.contains("\t") || newEng.contains(" ")) {
+                System.out.println("영단어에 탭(Tab)이나 띄어쓰기를 사용할 수 없습니다.");
+                return;
+            }
+            // 특수문자 제한 (영어와 하이픈만 허용) - addVoca와 동일한 규칙 적용
+            if (!newEng.matches("^[a-zA-Z][a-zA-Z-]*$")) {
+                System.out.println("영단어에는 영어와 하이픈(-)만 사용할 수 있습니다.");
+                return;
+            }
+        }
+
         System.out.print("새 뜻 (엔터 입력 시 유지): ");
         String newKor = scanner.nextLine().trim();
+
+        if (!newKor.isEmpty()) {
+            // 뜻은 탭만 금지 (띄어쓰기는 허용)
+            if (newKor.contains("\t")) {
+                System.out.println("뜻에 탭(Tab) 문자를 사용할 수 없습니다.");
+                return;
+            }
+        }
 
         if (newEng.isEmpty())
             newEng = oldEng;

@@ -43,9 +43,15 @@ public abstract class VocaFileManager {
         String eng = scanner.nextLine().trim();
         // 영단어 입력 및 공백 제거
 
-        // 유효성 검사 - 영어, 띄어쓰기, 하이픈만 허용. 이외의 특수기호는 즐겨찾기 토글 로직과 충돌 할 수 있기에 배제함
-        if (!eng.matches("^[a-zA-Z][a-zA-Z -]*$")) {
-            System.out.println("영단어에는 영어/띄어쓰기/하이픈만 사용할 수 있습니다.");
+        // 탭 또는 띄어쓰기가 포함되어 있는지 확인
+        if (eng.contains("\t") || eng.contains(" ")) {
+            System.out.println("영단어에 탭(Tab)이나 띄어쓰기를 사용할 수 없습니다.");
+            return;
+        }
+
+        // 유효성 검사 - 영어, 하이픈만 허용. 이외의 특수기호는 즐겨찾기 토글 로직과 충돌 할 수 있기에 배제함
+        if (!eng.matches("^[a-zA-Z][a-zA-Z-]*$")) {
+            System.out.println("영단어에는 영어/하이픈만 사용할 수 있습니다.");
             return;
             // 유효하지 않은 문자 포함 시 중단
         }
@@ -58,6 +64,12 @@ public abstract class VocaFileManager {
         System.out.print("뜻(여러 뜻은 '/'로 구분): ");
         String kor = scanner.nextLine().trim();
         // 뜻 입력
+
+        // 탭은 금지 (띄어쓰기는 허용)
+        if (kor.contains("\t")) {
+            System.out.println("뜻에 탭(Tab) 문자를 사용할 수 없습니다.");
+            return;
+        }
 
         if (kor.isEmpty()) {
             System.out.println("뜻은 비어있을 수 없습니다.");
@@ -289,8 +301,30 @@ public abstract class VocaFileManager {
         // 새 정보 입력 받기 (빈 값 + 엔터 입력 시 유지)
         System.out.print("새 영단어 (엔터 입력 시 유지): ");
         String newEng = scanner.nextLine().trim();
+
+        if (!newEng.isEmpty()) {
+            // 영단어는 탭, 띄어쓰기 금지
+            if (newEng.contains("\t") || newEng.contains(" ")) {
+                System.out.println("영단어에 탭(Tab)이나 띄어쓰기를 사용할 수 없습니다.");
+                return;
+            }
+            // 특수문자 제한 (영어와 하이픈만 허용) - addVoca와 동일한 규칙 적용
+            if (!newEng.matches("^[a-zA-Z][a-zA-Z-]*$")) {
+                System.out.println("영단어에는 영어와 하이픈(-)만 사용할 수 있습니다.");
+                return;
+            }
+        }
+
         System.out.print("새 뜻 (엔터 입력 시 유지, 여러 뜻은 '/'로 구분): ");
         String newKor = scanner.nextLine().trim();
+
+        if (!newKor.isEmpty()) {
+            // 뜻은 탭만 금지 (띄어쓰기는 허용)
+            if (newKor.contains("\t")) {
+                System.out.println("뜻에 탭(Tab) 문자를 사용할 수 없습니다.");
+                return;
+            }
+        }
 
         if (newEng.isEmpty())
             newEng = curEng;
