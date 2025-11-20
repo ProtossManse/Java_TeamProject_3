@@ -19,9 +19,14 @@ public class QuizManager {
     ArrayList<String> noteWords = new ArrayList<>(); // 오답노트에 추가될 단어들
     final User user; //현재 사용자
 
+    int quizNum; //문제 수
+    boolean[] usedIndex; //중복되는 문제를 방지하기 위함
+    int score;
+
     public QuizManager(User user) {
         this.user = user;
     }
+
 
     public void personalWordQuiz(ArrayList<String> list) {
         //단어장 목록 출력 및 선택
@@ -275,32 +280,47 @@ public class QuizManager {
         }
     }
 
+    private void setQuestion(ArrayList<String> list){
+        //문제 수 입력
+        System.out.print("문제 수를 입력해주세요 : ");
+        this.quizNum = sc.nextInt();
+        sc.nextLine();
+
+        if (this.quizNum < 1) { //문제 수 입력할 때 0이나 음수를 적으면
+            System.out.println("1문제 이상 출제되어야 합니다.");
+            return;
+        } else if (this.quizNum > list.size()) { //입력한 문제 수가 가능한 문제 수보다 많으면
+            this.quizNum = list.size(); //문제 수를 가능한 최대의 문제 수로 설정
+        }
+
+        this.usedIndex = new boolean[list.size()]; //중복되는 문제를 방지하기 위함
+        this.score = 0; //사용자의 점수
+
+    }
+
+    private String getKorStr(ArrayList<String> aKorList) {
+        String korStr = ""; //출력할 정답
+        for (String kor : aKorList) {
+            korStr += kor + "/"; //한국어/한국어2/ ... / 형식
+        }
+        return korStr.substring(0, korStr.length() - 1); //맨 마지막의 /를 지우기
+    }
+
     private void shortAnswerQuestion(ArrayList<String> list) {
+
         if (list == null) { //받은 리스트에 단어가 하나도 없으면
             System.out.println("단어가 등록되어 있지 않습니다.");
             return;
         }
 
-        //문제 수 입력
-        System.out.print("문제 수를 입력해주세요 : ");
-        int quizNum = sc.nextInt();
-        sc.nextLine();
+       setQuestion(list); //문제 출제 준비
 
-        if (quizNum < 1) { //문제 수 입력할 때 0이나 음수를 적으면
-            System.out.println("1문제 이상 출제되어야 합니다.");
-            return;
-        } else if (quizNum > list.size()) { //입력한 문제 수가 가능한 문제 수보다 많으면
-            quizNum = list.size(); //문제 수를 가능한 최대의 문제 수로 설정
-        }
-
-        boolean[] usedIndex = new boolean[list.size()]; //중복되는 문제를 방지하기 위함
-        int score = 0; //사용자의 점수
-        for (int i = 0; i < quizNum; i++) { //문제 수만큼 반복
+        for (int i = 0; i < this.quizNum; i++) { //문제 수만큼 반복
             int answerIndex;
             do {
                 answerIndex = ran.nextInt(list.size()); //리스트에 있는 랜덤의 단어 고르기
-            } while (usedIndex[answerIndex]); //중복되지 않을 때까지
-            usedIndex[answerIndex] = true; //성공적으로 고른 단어를 중복 표시
+            } while (this.usedIndex[answerIndex]); //중복되지 않을 때까지
+            this.usedIndex[answerIndex] = true; //성공적으로 고른 단어를 중복 표시
 
             // aEng (영어), aKor (한국어) 나누기
             String[] a = list.get(answerIndex).split("\t", 2);
@@ -322,7 +342,7 @@ public class QuizManager {
             if (randquiz == 1) { //영어 -> 한국어
 
                 //문제 출력 (형식: [문제 번호/총 문제수] '영어'의 뜻은?)
-                System.out.println("\n[" + (i + 1) + "/" + quizNum + "] " + aEng + "의 뜻은?");
+                System.out.println("\n[" + (i + 1) + "/" + this.quizNum + "] " + aEng + "의 뜻은?");
                 String answer = sc.nextLine().trim(); //대답에 모든 공백 지우기
 
                 String[] userAnswers = answer.split("/"); // 슬래시를 기준으로 답 나누기
@@ -337,47 +357,38 @@ public class QuizManager {
 
                 if (isCorrect) {
                     System.out.println("정답!");
-                    score++; //점수 증가
+                    this.score++; //점수 증가
                 } else {
                     System.out.println("오답!");
                     addToNote(aEng, aKor); //오답노트에 추가될 단어를 리스트에 추가
 
-                    String answerStr = ""; //출력할 정답
-                    for (String kor : aKorList) {
-                        answerStr += kor + "/"; //한국어/한국어2/ ... / 형식
-                    }
-                    answerStr = answerStr.substring(0, answerStr.length() - 1); //맨 마지막의 /를 지우기
-                    System.out.println("정답은 " + aEng + " = " + answerStr); //(형식: 정답은 '영어' = '한국어 / 한국어2 / ...)
+                    System.out.println("정답은 " + aEng + " = " + getKorStr(aKorList)); //(형식: 정답은 '영어' = '한국어/한국어2/...)
                 }
 
             } else { //한국어 -> 영어
 
-                // answerStr과 같은 원리
-                String questionStr = "";
-                for (String kor : aKorList) {
-                    questionStr += kor + "/";
-                }
-                questionStr = questionStr.substring(0, questionStr.length() - 1);
-
                 //문제 출력 (형식: [문제 번호/총 문제수] '한국어'를(을) 영어로 하면?)
-                System.out.println("\n[" + (i + 1) + "/" + quizNum + "] " + "'" + questionStr + "'" + "를(을) 영어로 하면?");
+                String questionStr = getKorStr(aKorList);
+                System.out.println("\n[" + (i + 1) + "/" + this.quizNum + "] " + "'" + questionStr + "'" + "를(을) 영어로 하면?");
                 String answer = sc.nextLine().trim();
 
-                if (answer.equals(aEng)) { //입력한 영어와 같다면
+                if (answer.toLowerCase().equals(aEng)) { //입력한 영어와 같다면
                     System.out.println("정답!");
-                    score++; //점수 증가
+                    this.score++; //점수 증가
                 } else {
                     System.out.println("오답!");
                     addToNote(aEng, aKor); //오답노트에 추가될 단어를 리스트에 추가
-                    System.out.println("정답은 " + aEng + " = " + questionStr); //(형식: 정답은 '영어' = '한국어 / 한국어2 / ...)
+                    System.out.println("정답은 " + aEng + " = " + questionStr); //(형식: 정답은 '영어' = '한국어/한국어2/...)
                 }
             }
 
         }
         // (형식: 총 {문제 수}문제 중 {맞힌 개수}개 정답 (정답률 {소수점 첫째자리까지의 정답률})
-        System.out.printf("\n총 %d문제 중 %d개 정답 (정답률 %.1f%%)\n", quizNum, score, 100.0 * score / quizNum);
+        System.out.printf("\n총 %d문제 중 %d개 정답 (정답률 %.1f%%)\n",
+                this.quizNum, this.score, 100.0 * this.score / this.quizNum);
         createNote(); //퀴즈가 끝난 뒤 오답노트 생성
     }
+
 
     private void multipleChoiceQuestion(ArrayList<String> list) {
         //단어가 없거나 보기 4개를 만들 수 없는 경우 반환
@@ -389,29 +400,16 @@ public class QuizManager {
             return;
         }
 
-        //문제 수 입력
-        System.out.print("문제 수를 입력해주세요 : ");
-        int quizNum = sc.nextInt();
-        sc.nextLine();
+        setQuestion(list); //문제 출제 준비
 
-        if (quizNum < 1) {
-            System.out.println("1문제 이상 출제되어야 합니다.");
-            return;
-        } else if (quizNum > list.size()) {
-            quizNum = list.size();
-        }
-
-        boolean[] usedIndex = new boolean[list.size()]; //중복 문제 방지
-        int score = 0;
-
-        for (int i = 0; i < quizNum; i++) {
+        for (int i = 0; i < this.quizNum; i++) {
 
             //정답 단어 인덱스 추출
             int answerIndex;
             do {
                 answerIndex = ran.nextInt(list.size());
-            } while (usedIndex[answerIndex]);
-            usedIndex[answerIndex] = true;
+            } while (this.usedIndex[answerIndex]);
+            this.usedIndex[answerIndex] = true;
 
             //정답 단어 분리 (eng, kor)
             String[] a = list.get(answerIndex).split("\t", 2);
@@ -445,7 +443,7 @@ public class QuizManager {
             }
 
             //문제 출력
-            System.out.println("\n[" + (i + 1) + "/" + quizNum + "] " + aEng + "의 뜻은?");
+            System.out.println("\n[" + (i + 1) + "/" + this.quizNum + "] " + aEng + "의 뜻은?");
             for (int k = 0; k < 4; k++) {
                 String[] s = list.get(choiceIndex[k]).split("\t", 2);
                 String kor = s[1].trim();
@@ -470,7 +468,7 @@ public class QuizManager {
             //정답 확인
             if (choiceIndex[choice - 1] == answerIndex) {
                 System.out.println("정답!");
-                score++;
+                this.score++;
             } else {
                 //정답 보기 번호 찾기
                 int correctNum = -1;
@@ -486,7 +484,8 @@ public class QuizManager {
             }
         }
         //결과 출력 + 오답노트 생성
-        System.out.printf("\n총 %d문제 중 %d개 정답 (정답률 %.1f%%)\n", quizNum, score, 100.0 * score / quizNum);
+        System.out.printf("\n총 %d문제 중 %d개 정답 (정답률 %.1f%%)\n",
+                this.quizNum, this.score, 100.0 * this.score / this.quizNum);
         createNote();
     }
 }

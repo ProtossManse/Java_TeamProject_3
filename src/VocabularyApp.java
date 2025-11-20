@@ -252,7 +252,7 @@ public class VocabularyApp {
             System.out.println("2. 개인 오답노트 퀴즈");
             System.out.println("3. 즐겨찾기 단어 퀴즈");
             System.out.println("4. 공용 단어장 퀴즈");
-            System.out.println("5. 많이 틀리는 단어 퀴즈 (추후구현)");
+            System.out.println("5. 많이 틀리는 단어 퀴즈");
             System.out.println("6. 돌아가기");
             System.out.print(">> ");
 
