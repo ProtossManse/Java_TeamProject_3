@@ -392,7 +392,7 @@ public class QuizManager {
 
                 //문제 출력 (형식: [문제 번호/총 문제수] '한국어'를(을) 영어로 하면?)
                 String questionStr = getKorStr(word.koreanList);
-                System.out.println("\n[" + (i + 1) + "/" + words.size() + "] " + "'" + questionStr + "'" + "를(을) 영어로 하면?");
+                System.out.println("\n[" + (i + 1) + "/" + quizNum + "] " + "'" + questionStr + "'" + "를(을) 영어로 하면?");
                 String answer = sc.nextLine().trim();
 
                 if (answer.toLowerCase().equals(aEng)) { //입력한 영어와 같다면
@@ -411,7 +411,7 @@ public class QuizManager {
         }
         // (형식: 총 {문제 수}문제 중 {맞힌 개수}개 정답 (정답률 {소수점 첫째자리까지의 정답률})
         System.out.printf("\n총 %d문제 중 %d개 정답 (정답률 %.1f%%)\n",
-                words.size(), this.score, 100.0 * this.score / quizNum);
+                quizNum, this.score, 100.0 * this.score / quizNum);
         if (isPublic) {
             updateStatistics(words);
         }
@@ -520,7 +520,7 @@ public class QuizManager {
         }
         //결과 출력 + 오답노트 생성
         System.out.printf("\n총 %d문제 중 %d개 정답 (정답률 %.1f%%)\n",
-                words.size(), this.score, 100.0 * this.score / quizNum);
+                quizNum, this.score, 100.0 * this.score / quizNum);
         if (isPublic) {
             updateStatistics(words);
         }
