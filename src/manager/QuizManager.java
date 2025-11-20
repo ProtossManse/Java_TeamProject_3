@@ -318,10 +318,25 @@ public class QuizManager {
             return;
         }
 
+        // 출제할 문제 수 입력받기
+        System.out.print("출제할 문제 수를 입력하세요: ");
+        int quizNum = 0;
+        while (true) {
+            quizNum = readInt();
+            if (quizNum < 1) {
+                System.out.print("1문제 이상 출제해야 합니다. 다시 입력하세요: ");
+            } else {
+                break;
+            }
+        }
+        if (quizNum > words.size()) {
+            quizNum = words.size(); // 최대 단어 개수까지만
+        }
+
         ArrayList<Word> mutableWords = new ArrayList<>(words);
 
         int i = 0;
-        while (!mutableWords.isEmpty() && i < words.size()) {
+        while (!mutableWords.isEmpty() && i < quizNum) {
 
             int randomIndex = ran.nextInt(mutableWords.size());
             Word word = mutableWords.get(randomIndex);
@@ -347,7 +362,7 @@ public class QuizManager {
             if (randquiz == 1) { //영어 -> 한국어
 
                 //문제 출력 (형식: [문제 번호/총 문제수] '영어'의 뜻은?)
-                System.out.println("\n[" + (i + 1) + "/" + words.size() + "] " + aEng + "의 뜻은?");
+                System.out.println("\n[" + (i + 1) + "/" + quizNum + "] " + aEng + "의 뜻은?");
                 String answer = sc.nextLine().trim(); //대답에 모든 공백 지우기
 
                 String[] userAnswers = answer.split("/"); // 슬래시를 기준으로 답 나누기
@@ -396,7 +411,7 @@ public class QuizManager {
         }
         // (형식: 총 {문제 수}문제 중 {맞힌 개수}개 정답 (정답률 {소수점 첫째자리까지의 정답률})
         System.out.printf("\n총 %d문제 중 %d개 정답 (정답률 %.1f%%)\n",
-                words.size(), this.score, 100.0 * this.score / words.size());
+                words.size(), this.score, 100.0 * this.score / quizNum);
         if (isPublic) {
             updateStatistics(words);
         }
@@ -413,10 +428,26 @@ public class QuizManager {
             System.out.println("객관식 보기를 만들 단어(4개)가 부족합니다.");
             return;
         }
+
+        // 출제할 문제 수 입력받기
+        System.out.print("출제할 문제 수를 입력하세요: ");
+        int quizNum;
+        while (true) {
+            quizNum = readInt();
+            if (quizNum < 1) {
+                System.out.print("1문제 이상 출제해야 합니다. 다시 입력하세요: ");
+            } else {
+                break;
+            }
+        }
+        if (quizNum > words.size()) {
+            quizNum = words.size(); // 최대 단어 개수까지만
+        }
+
         ArrayList<Word> mutableWords = new ArrayList<>(words);
 
         int i = 0;
-        while (!mutableWords.isEmpty() && i < words.size()) {
+        while (!mutableWords.isEmpty() && i < quizNum) {
 
             int randomIndex = ran.nextInt(mutableWords.size());
             Word word = mutableWords.get(randomIndex);
@@ -443,7 +474,7 @@ public class QuizManager {
 
 
             //문제 출력
-            System.out.println("\n[" + (i + 1) + "/" + words.size() + "] " + word.getEnglish() + "의 뜻은?");
+            System.out.println("\n[" + (i + 1) + "/" + quizNum + "] " + word.getEnglish() + "의 뜻은?");
 
             for (int j = 0; j < choices.size(); j++) {
                 String kor = choices.get(j).getKorean();
@@ -489,7 +520,7 @@ public class QuizManager {
         }
         //결과 출력 + 오답노트 생성
         System.out.printf("\n총 %d문제 중 %d개 정답 (정답률 %.1f%%)\n",
-                words.size(), this.score, 100.0 * this.score / words.size());
+                words.size(), this.score, 100.0 * this.score / quizNum);
         if (isPublic) {
             updateStatistics(words);
         }
