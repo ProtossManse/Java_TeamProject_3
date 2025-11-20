@@ -16,3 +16,5 @@
     "JAVA_TOOL_OPTIONS": "-Dfile.encoding=UTF-8"
   }
 }
+// 한글 입력 시 깨지는 문제를 해결하기 위해서 추가된 코드
+// UTF-8로 고정하고 덮어씀

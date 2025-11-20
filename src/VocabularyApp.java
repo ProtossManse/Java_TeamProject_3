@@ -11,51 +11,79 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
 
-/**
- * (VocabularyApp.java - 수정본)
- * VocaFileManager 생성자 호출 부분을 수정합니다.
- */
 public class VocabularyApp {
     Scanner scanner = new Scanner(System.in, StandardCharsets.UTF_8);
-    final User currentUser;
+    // 사용자 입력을 받기 위한 스캐너 (한글 깨짐 방지 UTF-8)
 
-    VocabularyApp(User user) {
+    final User currentUser;
+    // 현재 로그인한 사용자 정보 (final로 변경 불가)
+
+    public VocabularyApp(User user) {
         this.currentUser = user;
+        // 생성자 - 로그인 시 전달받은 사용자 정보를 저장
     }
 
     public ArrayList<String> getPersonalVocaFilesList() {
         File dir = new File(Path.getVocaDirPath(currentUser.getName()));
+        // 사용자 개인 단어장 폴더 경로
 
-        String[] list = dir.list((d, name) -> name.endsWith(".txt")); // .txt만
+        if (!dir.exists()) {
+            return new ArrayList<>();
+            // 폴더가 없으면 null 대신 빈 리스트 반환 (NullPointerException 방지 위함)
+        }
+
+        String[] list = dir.list((d, name) -> name.endsWith(".txt"));
+        // .txt 파일만 필터링하여 배열로 가져옴
+
         if (list != null && list.length > 0) {
             return new ArrayList<>(Arrays.asList(list));
-        } else
-            return new ArrayList<>(); // null 대신 빈 리스트 반환
+            // 파일이 있으면 리스트로 변환하여 반환
+        } else {
+            return new ArrayList<>();
+            // 파일이 없으면 빈 리스트를 반환
+        }
     }
 
     public ArrayList<String> getPersonalNotes() {
         File dir = new File(Path.getNoteDirPath(currentUser.getName()));
+        // 사용자 오답노트 폴더 경로
 
-        String[] list = dir.list((d, name) -> name.endsWith(".txt")); // .txt만
-        if (list != null) {
-            return new ArrayList<>(Arrays.asList(list));
-        } else
-            return null;
-    }
+        if (!dir.exists()) {
+            return new ArrayList<>();
+        }
 
-    /** 공용 단어장 파일 목록을 가져옵니다. */
-    public ArrayList<String> getPublicVocaFilesList() {
-        File dir = new File(Path.getPublicDirPath());
         String[] list = dir.list((d, name) -> name.endsWith(".txt"));
+        // .txt 파일만 필터링
+
         if (list != null && list.length > 0) {
             return new ArrayList<>(Arrays.asList(list));
-        } else
-            return null;
+        } else {
+            return new ArrayList<>();
+        } // 위 내용과 동일 작업
+    }
+
+    public ArrayList<String> getPublicVocaFilesList() {
+        File dir = new File(Path.getPublicDirPath());
+        // 공용 단어장 폴더 경로
+
+        if (!dir.exists()) {
+            return new ArrayList<>();
+        }
+
+        String[] list = dir.list((d, name) -> name.endsWith(".txt"));
+        // .txt 파일만 필터링
+
+        if (list != null && list.length > 0) {
+            return new ArrayList<>(Arrays.asList(list));
+        } else {
+            return new ArrayList<>();
+        } // 여기도 위랑 동일
     }
 
     public void menu() {
         int choice = 0;
-        // [수정] 6번 종료가 아닌 5번 종료
+        // 메뉴 선택 변수
+
         while (choice != 5) {
             System.out.println("\n\n\n==== 단어장 메뉴 화면 ====");
             System.out.println("이름: " + currentUser.getName());
@@ -63,96 +91,102 @@ public class VocabularyApp {
             System.out.println("1. 개인 단어장 관리");
             System.out.println("2. 공용 단어장 관리");
             System.out.println("3. 퀴즈 풀기");
-
-            // ▼▼▼ [수정된 부분] ▼▼▼
-            System.out.println("4. 오답노트 관리"); // 신규 추가
-            System.out.println("5. 종료하기"); // 기존 4번 -> 5번
-            // ▲▲▲ [수정된 부분] ▲▲▲
-
+            System.out.println("4. 오답노트 관리");
+            System.out.println("5. 종료하기");
             System.out.print(">> ");
 
             try {
-                // [수정] nextInt() 대신 nextLine()을 사용하여 입력 오류 방지
-                choice = Integer.parseInt(scanner.nextLine().trim());
+                String input = scanner.nextLine().trim();
+                if (input.isEmpty())
+                    continue;
+                choice = Integer.parseInt(input);
+                // 입력받은 문자열을 숫자로 변환 (입력 버퍼 오류 방지)
             } catch (NumberFormatException e) {
-                choice = -1; // 잘못된 입력 처리
+                choice = -1;
+                // 숫자가 아닌 입력 시 -1로 처리하여 default 분기로 이동
             }
 
             switch (choice) {
                 case 1 -> managePersonalVocas();
                 case 2 -> managePublicVocas();
                 case 3 -> quiz();
-
-                // ▼▼▼ [수정된 부분] ▼▼▼
-                case 4 -> manageNotes(); // 4번: 오답노트 관리
-                case 5 -> System.out.println("단어장 앱을 종료합니다."); // 5번: 종료
-                // ▲▲▲ [수정된 부분] ▲▲▲
-
+                case 4 -> manageNotes();
+                case 5 -> System.out.println("단어장 앱을 종료합니다.");
                 default -> System.out.println("잘못된 입력입니다.");
-            }
+            }// switch 확장문
         }
     }
 
     // =========== 개인 단어 관리 ===========
 
     private void managePersonalVocas() {
-        String choice;
         ArrayList<String> wordBooksFileArray = getPersonalVocaFilesList();
+        // 개인 단어장 목록 로드
 
-        // (수정) 비어있어도 바로 생성하지 않고, 'n'을 누를 때 생성하도록 유도
         if (wordBooksFileArray.isEmpty()) {
             System.out.println("'vocas' 폴더에 단어장이 없습니다. 'n'을 눌러 새로 만드세요.");
+            // 단어장이 없을 때 안내 메시지
         }
 
         while (true) {
             System.out.println("\n==== 개인 단어장 관리 ====");
 
             ArrayList<String> displayList = new ArrayList<>();
-            displayList.add("즐겨찾기"); // 특별 항목
-            displayList.addAll(wordBooksFileArray); // 'vocas' 폴더 파일들
+            displayList.add("즐겨찾기");
+            // 목록 맨 위에 '즐겨찾기' 고정 추가
+
+            displayList.addAll(wordBooksFileArray);
+            // 실제 파일 목록 추가
 
             System.out.print("단어장 목록: ");
             System.out.println(String.join(", ", displayList));
+            // 목록 출력
 
             System.out.print("관리할 단어장을 선택하세요 (q: 뒤로가기, n: 새 단어장 만들기): ");
-            choice = scanner.nextLine().trim(); // next() 대신 nextLine() 사용
+            String choice = scanner.nextLine().trim();
 
             if (choice.equalsIgnoreCase("q")) {
-                return;
+                return; // 뒤로가기
             }
             if (choice.equalsIgnoreCase("n")) {
-                createVocaFile();
+                createVocaFile(); // 새 파일 생성
                 wordBooksFileArray = getPersonalVocaFilesList(); // 목록 갱신
-                continue;
+                continue; // while 루프 재시작
             }
 
             String selectedFile = null;
+            // 선택된 파일명을 null로 명시적 초기화 (안 하면 노란불)
+
             String selectedPath = null;
+            // 선택된 파일의 전체 경로
 
             if (choice.equals("즐겨찾기")) {
                 selectedFile = choice;
                 selectedPath = Path.getFavoriteFilePath(currentUser.getName());
+                // 즐겨찾기 선택 시 경로 설정
             } else {
                 for (String file : wordBooksFileArray) {
                     if (choice.equals(file)) {
                         selectedFile = file;
                         selectedPath = Path.getVocaFilePath(currentUser.getName(), selectedFile);
                         break;
+                        // 입력한 이름이 목록에 있으면 파일명과 경로 설정
                     }
                 }
             }
 
-            if (selectedFile != null) {
+            if (selectedFile != null && selectedPath != null) {
                 System.out.println("'" + selectedFile + "' 단어장을 엽니다.");
 
-                // [필수 수정] 생성자에 currentUser.getName()을 전달
+                // [중요] PersonalVocaFileManager 생성 시 currentUser.getName() 전달 (동기화 필수)
                 VocaFileManager vocaFileManager = new PersonalVocaFileManager(
                         selectedPath, currentUser.getName());
 
                 vocaFileManager.menu();
-                // (수정) 개인 단어장 관리 메뉴로 돌아오도록 return 제거
+                // 관리 메뉴 실행
             } else {
                 System.out.println("'" + choice + "'(은)는 목록에 없습니다. 다시 입력해주세요.");
+                // 잘못된 입력 처리
             }
         }
     }
@@ -160,15 +194,16 @@ public class VocabularyApp {
     private void createVocaFile() {
         System.out.println("==== 새 단어장 만들기 ====");
         System.out.print("만들 단어장 이름을 입력하세요 (예: myvoca.txt): ");
-        String filename = scanner.nextLine().trim(); // next() 대신 nextLine() 사용
+        String filename = scanner.nextLine().trim();
+
         if (filename.isEmpty()) {
             System.out.println("파일 이름을 입력해야 합니다.");
             return;
         }
 
-        // .txt 확장자 자동 추가
         if (!filename.endsWith(".txt")) {
             filename += ".txt";
+            // 확장자 .txt를 자동으로 추가
         }
 
         File vocaDir = new File(Path.getVocaDirPath(currentUser.getName()));
@@ -186,14 +221,14 @@ public class VocabularyApp {
         }
 
         try {
-            boolean created = newFile.createNewFile();
-            if (created) {
+            if (newFile.createNewFile()) {
                 System.out.println("단어장 '" + filename + "'이 생성되었습니다.");
             } else {
                 System.out.println("단어장 생성에 실패했습니다.");
             }
         } catch (IOException e) {
             System.out.println("단어장 생성 중 오류: " + e.getMessage());
+            // 파일 시스템 오류 처리
         }
     }
 
@@ -201,8 +236,9 @@ public class VocabularyApp {
 
     private void managePublicVocas() {
         ArrayList<String> publicVocaFiles = getPublicVocaFilesList();
+        // 공용 단어장 목록 로드
 
-        if (publicVocaFiles == null || publicVocaFiles.isEmpty()) {
+        if (publicVocaFiles.isEmpty()) {
             System.out.println("접근할 수 있는 공용 단어장이 없습니다.");
             return;
         }
@@ -217,28 +253,35 @@ public class VocabularyApp {
 
             int choice;
             try {
-                choice = Integer.parseInt(scanner.nextLine().trim());
+                String input = scanner.nextLine().trim();
+                if (input.isEmpty())
+                    continue;
+                choice = Integer.parseInt(input);
             } catch (NumberFormatException e) {
                 System.out.println("숫자를 입력해주세요.");
                 continue;
             }
 
             if (choice == 0)
-                return;
+                return; // 뒤로가기
+
             if (choice < 1 || choice > publicVocaFiles.size()) {
                 System.out.println("잘못된 번호입니다.");
                 continue;
             }
 
             String selectedFile = publicVocaFiles.get(choice - 1);
-            String publicFilePath = Path.getPublicFilePath();
+            // 선택된 파일명
 
-            // [필수 수정] 생성자에 currentUser.getName()을 전달
+            // Path 유틸 사용 (기본적으로 publics.txt 하나이겠지만 일단 목록에서 선택한 파일 사용)
+            // Path.java의 getPublicDirPath() + "/" + selectedFile 조합 사용
+            String publicFilePath = Path.getPublicDirPath() + "/" + selectedFile;
+
+            // 공용 단어장도 사용자 이름(currentUser)을 전달하여 즐겨찾기 동기화 지원
             VocaFileManager vocaFileManager = new PersonalVocaFileManager(
                     publicFilePath, currentUser.getName());
 
             vocaFileManager.menu();
-            // 메뉴가 끝나면 다시 이 목록으로 돌아옵니다.
         }
     }
 
@@ -257,18 +300,22 @@ public class VocabularyApp {
             System.out.print(">> ");
 
             try {
-                choice = Integer.parseInt(scanner.nextLine().trim());
+                String input = scanner.nextLine().trim();
+                if (input.isEmpty())
+                    continue;
+                choice = Integer.parseInt(input);
             } catch (NumberFormatException e) {
                 choice = -1;
             }
 
             QuizManager quizManager = new QuizManager(currentUser);
+            // 퀴즈 매니저 생성
 
             switch (choice) {
                 case 1 -> quizManager.personalWordQuiz(getPersonalVocaFilesList());
                 case 2 -> quizManager.personalNoteQuiz(getPersonalNotes());
                 case 3 -> quizManager.personalFavoriteQuiz(Path.getFavoriteFilePath(currentUser.getName()));
-                case 4 -> quizManager.publicWordQuiz(getPublicVocaFilesList()); // (이 부분은 아직 미구현 상태)
+                case 4 -> quizManager.publicWordQuiz(getPublicVocaFilesList());
                 case 5 -> quizManager.publicFrequentlyMissedQuiz(getPublicVocaFilesList());
                 case 6 -> System.out.println("메인메뉴로 돌아갑니다.");
                 default -> System.out.println("잘못된 입력입니다.");
@@ -279,8 +326,8 @@ public class VocabularyApp {
     // =========== 오답노트 관리 ===========
 
     private void manageNotes() {
-        // 'notes' 폴더의 실제 파일 목록을 가져옵니다.
         ArrayList<String> noteFiles = getPersonalNotes();
+        // 오답노트 파일 목록 로드
 
         if (noteFiles == null || noteFiles.isEmpty()) {
             System.out.println("관리할 오답노트가 없습니다. (퀴즈를 먼저 풀어주세요)");
@@ -299,15 +346,18 @@ public class VocabularyApp {
 
             int choice;
             try {
-                choice = Integer.parseInt(scanner.nextLine().trim());
+                String input = scanner.nextLine().trim();
+                if (input.isEmpty())
+                    continue;
+                choice = Integer.parseInt(input);
             } catch (NumberFormatException e) {
                 System.out.println("숫자를 입력해주세요.");
                 continue;
             }
 
-            if (choice == 0) {
-                return; // 메인 메뉴로
-            }
+            if (choice == 0)
+                return; // 뒤로가기
+
             if (choice < 1 || choice > noteFiles.size()) {
                 System.out.println("잘못된 번호입니다.");
                 continue;
@@ -316,12 +366,13 @@ public class VocabularyApp {
             String selectedFile = noteFiles.get(choice - 1);
             String noteFilePath = Path.getNoteFilePath(currentUser.getName(), selectedFile);
 
-            // PersonalVocaFileManager를 '오답노트' 모드(isNoteFile=true)로 실행합니다.
-            // username을 주입하여 동기화가 가능하도록 합니다.
+            System.out.println("'" + selectedFile + "' 오답노트를 엽니다.");
+
+            // 오답노트 경로와 사용자 이름을 전달하여 PersonalVocaFileManager 생성
             VocaFileManager vocaFileManager = new PersonalVocaFileManager(
                     noteFilePath, currentUser.getName());
 
-            vocaFileManager.menu(); // 오답노트 전용 메뉴(noteMenu) 실행
+            vocaFileManager.menu();
         }
     }
 }

@@ -41,4 +41,3 @@ public class Path {
         return "res/public/vocas/publics.txt";
     }
 }
-
